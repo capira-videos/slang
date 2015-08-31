@@ -1,6 +1,6 @@
 {
   "name": "mathslang",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://github.com/capira12/mathslang",
   "authors": [
     "(Tino Steffens <tino@capira.de>)"
@@ -17,9 +17,10 @@
     "node_modules",
     "bower_components",
     "test",
+    "src",
     "tests"
   ],
-  "dependencies": {
+  "devDependencies": {
     "jquery": "jQuery#~2.1.4"
   }
 }
