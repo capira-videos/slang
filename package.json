@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/capira12/mathslang#readme",
   "dependencies": {
+    "bower": "^1.5.2",
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
     "gulp-rename": "^1.2.2"
