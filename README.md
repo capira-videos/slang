@@ -2,7 +2,8 @@
 mathslang is world's most awesome lib to evaluate mathematical expressions as quiz answers
 ## usage 
 - option A: download dist/mathslang.min.js
-- option B: install via bower `bower install --save https://github.com/capira12/mathslang.git#master`
+- option B: install via bower `bower install --save git@github.com:capira12/mathslang.git#master`
+Make sure you have your private key correctly set. See https://help.github.com/articles/error-permission-denied-publickey/
 
 
 ## development
