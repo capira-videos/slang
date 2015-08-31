@@ -1,0 +1,25 @@
+{
+  "name": "mathslang",
+  "version": "1.0.0",
+  "homepage": "https://github.com/capira12/mathslang",
+  "authors": [
+    "(Tino Steffens <tino@capira.de>)"
+  ],
+  "description": "mathslang is world's most awesome lib to evaluate mathematical expressions as quiz answers.",
+  "main": "dist/mathslang.min.js",
+  "keywords": [
+    "capira",
+    "mathslang"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "jQuery#~2.1.4"
+  }
+}
