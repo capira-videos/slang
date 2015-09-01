@@ -47,6 +47,7 @@ gulp.task('slang', function() {
 });
 
 
+gulp.task('default', ['mathslang', 'colors', 'hausdorff-metric', 'langslang', 'logicslang'] );
 
 // Watch Files For Changes & Reload
 gulp.task('serve', ['mathslang', 'colors', 'hausdorff-metric', 'langslang', 'logicslang'], function() {
