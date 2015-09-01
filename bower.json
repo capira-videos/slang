@@ -8,10 +8,14 @@
         "(Robin Linus <robin@capira.de>)"
     ],
     "description": "slang is world's most awesome lib to evaluate mathematical expressions as quiz answers.",
-    "main": "dist/slang/slang.min.js",
+    "main": "dist/slang.min.js",
     "keywords": [
         "capira",
-        "slang"
+        "slang", 
+        "mathslang", 
+        "langslang", 
+        "logicslang", 
+        "hausdorffslang"
     ],
     "license": "MIT",
     "ignore": [
@@ -20,7 +24,7 @@
         "bower_components",
         "test",
         "src",
-        "tests"
+        "spec"
     ],
     "devDependencies": {
         "jquery": "jQuery#~2.1.4"

@@ -2,12 +2,12 @@
   "name": "slang",
   "version": "1.0.0",
   "description": "slang is world's most awesome lib to evaluate quiz answers",
-  "main": "index.js",
+  "main": "dist/slang.min.js",
   "directories": {
-    "test": "test"
+    "spec": "spec"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "spec": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -21,10 +21,12 @@
   "homepage": "https://github.com/capira12/slang#readme",
   "devDependencies": {
     "bower": "^1.5.2",
-    "browser-sync": "^2.8.2",
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
+    "gulp-jasmine-livereload-task": "^0.7.0",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.4.0"
+    "gulp-uglify": "^1.4.0",
+    "gulp-util": "^3.0.6",
+    "gulp-watch": "^4.3.5"
   }
 }

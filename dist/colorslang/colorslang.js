@@ -1,8 +1,8 @@
 
 'use strict';
-window.Capira = window.Capira || {};
-window.Capira.ColorLogic = {
-    matchColors: function(expected, given) {
+window.Slang = window.Slang || {};
+window.Slang.colorslang = {
+    compare: function(expected, given) {
         console.log(this.rgbToHex(given));
         return expected === this.rgbToHex(given);
     },

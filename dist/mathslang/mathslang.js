@@ -1,7 +1,10 @@
 'use strict';
-window.Capira = window.Capira || {};
-window.Capira.Mathslang = {
-    matchPair: function(expectedValue, givenValue) {
+window.Slang = window.Slang || {};
+window.Slang.mathslang = {
+    compare: function(expectedValue, givenValue) {
+        return Slang.logicslang.compare(expectedValue, givenValue, this._compare);
+    },
+    _compare: function(expectedValue, givenValue) {
         //Inputs could be a Number so we convert them to String:
         givenValue = givenValue + '';
         expectedValue = expectedValue + '';
@@ -41,6 +44,8 @@ window.Capira.Mathslang = {
         }
     }
 };
+
+
 
 /**
 	class `Imag' is the imaginary part of terms

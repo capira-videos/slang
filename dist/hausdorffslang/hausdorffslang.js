@@ -1,9 +1,9 @@
 'use strict';
-window.Capira = window.Capira || {};
-window.Capira.Hausdorff = {
+window.Slang = window.Slang || {};
+window.Slang.hausdorffslang = {
 
 
-    evalInput: function(X, Y, translateX, translateY, scale) {
+    compare: function(X, Y, translateX, translateY, scale) {
         var Z = this._normalize(X, Y, translateX, translateY, scale);
         return 1 - Math.max(this._maxeuclideanDistance(Z.X, Z.Y), this._maxeuclideanDistance(Z.Y, Z.X));
     },
