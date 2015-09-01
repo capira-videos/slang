@@ -1,10 +1,9 @@
 'use strict';
-window.Capira = window.Capira || {};
-window.Capira.Logicslang = {
-	// Handles logical operators #or, #and, and #not
-	evalLogic: function(expectedValue, givenValue) {
-		
-		var lp = new LogicParser(this.matchPair);
-		return lp.eval(expectedValue, givenValue);
-	}
+window.Slang = window.Slang || {};
+window.Slang.logicslang = {
+    // Handles logical operators #or, #and, and #not
+    compare: function(expectedValue, givenValue, compareFn) {
+        var lp = new LogicParser(compareFn);
+        return lp.eval(expectedValue, givenValue);
+    }
 };
