@@ -16,22 +16,22 @@
     <!-- Replace favicon.ico & apple-touch-icon.png in the root of your domain and delete these references -->
     <link rel="shortcut icon" href="/favicon.ico">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <script type="text/javascript" src="../bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
 
     <!--Development -->
-    <script type="text/javascript" src="../src/lex.js"></script>
-	<script type="text/javascript" src="../src/imag.js"></script>
-    <script type="text/javascript" src="../src/syntax.js"></script>
-    <script type="text/javascript" src="../src/seman.js"></script>
-    <script type="text/javascript" src="../src/mathslang.js"></script>
+    <script type="text/javascript" src="../libs/lex.js"></script>
+	<script type="text/javascript" src="../libs/imag.js"></script>
+    <script type="text/javascript" src="../libs/syntax.js"></script>
+    <script type="text/javascript" src="../libs/seman.js"></script>
+    <script type="text/javascript" src="../libs/mathslang-impl.js"></script>
     <!-- -->
 
     <!--Sum ->
-    <script type="text/javascript" src="../dist/mathslang.js"></script>
+    <script type="text/javascript" src="../dist/mathslang/mathslang.js"></script>
     <!---->
 
     <!--Production ->
-    <script type="text/javascript" src="../dist/mathslang.min.js"></script>
+    <script type="text/javascript" src="/dist/mathslang/mathslang.min.js"></script>
     <!-- -->
 
     <style>
@@ -75,6 +75,8 @@
 </head>
 
 <body>
+    <span id="browser-sync-binding"></span>
+
 <header>
     <h1>mathslang testsuite</h1>
 </header>
