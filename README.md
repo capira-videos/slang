@@ -1,5 +1,6 @@
 # capiraslang
 `capiraslang` is a family of world's most awesome javascript libraries to evaluate user input from quizzes.
+Essentially it is a collection of Functions with type `String x String -> bool` that compare if to Strings mean the same. 
 
 The purpose of this project is the abstraction of ui and logic. 
 The Project _Capira Socrates_ is the UI and _capiraslang_ are more or less intelligent algorithms to compare user input to on a semantic level. 
