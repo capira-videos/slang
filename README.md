@@ -25,7 +25,8 @@ Make sure you have your private key correctly set. See https://help.github.com/a
 - Install tools via command line
 	- in your terminal navigate to `/slang`
 	- `npm install`
-	- `bower install`
 
 ### use tools 
-- build mathslang.min.js: `gulp`
+- use development server `gulp`
+- use build task `gulp build`
+- use distribution server `gulp test-dist`

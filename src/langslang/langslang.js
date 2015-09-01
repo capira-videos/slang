@@ -9,12 +9,12 @@ window.Slang.langslang = {
         expectedValue = expectedValue.trim();
         givenValue = givenValue.trim();
 
-        if (expectedValue.indexOf('#') == 0) {
+        if (expectedValue.indexOf('#') === 0) {
             var prefix = expectedValue.substr(1, expectedValue.indexOf(' ') - 1);
             expectedValue = expectedValue.substr(expectedValue.indexOf(' ') + 1);
 
             if (prefix == 'typo') {
-                return this._isTypo(expectedValue.toLowerCase(), givenValue.toLowerCase());
+                return Slang.langslang._isTypo(expectedValue.toLowerCase(), givenValue.toLowerCase());
             } else if (prefix == 'nocase') {
                 return expectedValue.toLowerCase() == givenValue.toLowerCase();
             } else if (prefix == 'regex') {
@@ -27,7 +27,7 @@ window.Slang.langslang = {
     },
 
     _isTypo: function(a, b) {
-        var dist = damerauLevenshtein(a, b);
+        var dist = Slang.langslang._damerauLevenshtein(a, b);
         // somewhat arbitrary metric
         if (dist < Math.ceil(Math.sqrt(a.length) - 1)) {
             return true;

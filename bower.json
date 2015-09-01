@@ -1,32 +1,30 @@
 {
-    "name": "slang",
-    "version": "1.0.1",
-    "homepage": "https://github.com/capira12/slang",
-    "authors": [
-        "(Tino Steffens <tino@capira.de>)",
-        "(Stephanie Lund <stef@capira.de>)",
-        "(Robin Linus <robin@capira.de>)"
-    ],
-    "description": "slang is world's most awesome lib to evaluate mathematical expressions as quiz answers.",
-    "main": "dist/slang.min.js",
-    "keywords": [
-        "capira",
-        "slang", 
-        "mathslang", 
-        "langslang", 
-        "logicslang", 
-        "hausdorffslang"
-    ],
-    "license": "MIT",
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "test",
-        "src",
-        "spec"
-    ],
-    "devDependencies": {
-        "jquery": "jQuery#~2.1.4"
-    }
+  "name": "slang",
+  "version": "1.0.1",
+  "homepage": "https://github.com/capira12/slang",
+  "authors": [
+    "(Tino Steffens <tino@capira.de>)",
+    "(Stephanie Lund <stef@capira.de>)",
+    "(Robin Linus <robin@capira.de>)"
+  ],
+  "description": "slang is world's most awesome lib to evaluate mathematical expressions as quiz answers.",
+  "main": "dist/slang.min.js",
+  "keywords": [
+    "capira",
+    "slang",
+    "mathslang",
+    "langslang",
+    "logicslang",
+    "hausdorffslang"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "src",
+    "spec"
+  ],
+  "devDependencies": {}
 }

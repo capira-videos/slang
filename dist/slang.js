@@ -150,12 +150,12 @@ window.Slang.langslang = {
         expectedValue = expectedValue.trim();
         givenValue = givenValue.trim();
 
-        if (expectedValue.indexOf('#') == 0) {
+        if (expectedValue.indexOf('#') === 0) {
             var prefix = expectedValue.substr(1, expectedValue.indexOf(' ') - 1);
             expectedValue = expectedValue.substr(expectedValue.indexOf(' ') + 1);
 
             if (prefix == 'typo') {
-                return this._isTypo(expectedValue.toLowerCase(), givenValue.toLowerCase());
+                return Slang.langslang._isTypo(expectedValue.toLowerCase(), givenValue.toLowerCase());
             } else if (prefix == 'nocase') {
                 return expectedValue.toLowerCase() == givenValue.toLowerCase();
             } else if (prefix == 'regex') {
@@ -168,7 +168,7 @@ window.Slang.langslang = {
     },
 
     _isTypo: function(a, b) {
-        var dist = damerauLevenshtein(a, b);
+        var dist = Slang.langslang._damerauLevenshtein(a, b);
         // somewhat arbitrary metric
         if (dist < Math.ceil(Math.sqrt(a.length) - 1)) {
             return true;
@@ -178,45 +178,45 @@ window.Slang.langslang = {
 
 };
 
-function damerauLevenshtein(a, b) {
+window.Slang.langslang._damerauLevenshtein = function(a, b) {
     var matrix = []
-    
+
     // check the easy cases first
-    if(a == b) {
+    if (a == b) {
         return 0;
     }
-    if(a.length == 0) {
+    if (a.length == 0) {
         return b.length
     }
-    if(b.length == 0) {
+    if (b.length == 0) {
         return a.length
     }
-    
-    for(var i = 0; i < a.length + 1; i++) {
+
+    for (var i = 0; i < a.length + 1; i++) {
         matrix[i] = [];
-        
-        for(var j = 0; j < b.length + 1; j++) {
-            if(i == 0 || j == 0) {
+
+        for (var j = 0; j < b.length + 1; j++) {
+            if (i == 0 || j == 0) {
                 matrix[i][j] = Math.max(i, j);
-            } else {            
+            } else {
                 matrix[i][j] = Math.min(
-                    matrix[i-1][j] + 1, // insertion
-                    matrix[i][j-1] + 1, // deletion
-                    matrix[i-1][j-1] + (a[i-1] == b[j-1]? 0 : 1) // substitution
+                    matrix[i - 1][j] + 1, // insertion
+                    matrix[i][j - 1] + 1, // deletion
+                    matrix[i - 1][j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1) // substitution
                 );
-            
+
                 // transposition
-                if(j > 1 && i > 1 && a[i-1] == b[j-2] && a[i-2] == b[j-1]) {
-                    matrix[i][j] = Math.min(matrix[i][j], matrix[i-2][j-2] + 1);
+                if (j > 1 && i > 1 && a[i - 1] == b[j - 2] && a[i - 2] == b[j - 1]) {
+                    matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + 1);
                 }
             }
         }
     }
-    
-    return matrix[a.length][b.length];
-}
 
-"use strict";function damerauLevenshtein(e,n){var t=[];if(e==n)return 0;if(0==e.length)return n.length;if(0==n.length)return e.length;for(var r=0;r<e.length+1;r++){t[r]=[];for(var a=0;a<n.length+1;a++)0==r||0==a?t[r][a]=Math.max(r,a):(t[r][a]=Math.min(t[r-1][a]+1,t[r][a-1]+1,t[r-1][a-1]+(e[r-1]==n[a-1]?0:1)),a>1&&r>1&&e[r-1]==n[a-2]&&e[r-2]==n[a-1]&&(t[r][a]=Math.min(t[r][a],t[r-2][a-2]+1)))}return t[e.length][n.length]}window.Slang=window.Slang||{},window.Slang.langslang={compare:function(e,n){return Slang.logicslang.compare(e,n,this._compare)},_compare:function(e,n){if(e=e.trim(),n=n.trim(),0!=e.indexOf("#"))return e==n;var t=e.substr(1,e.indexOf(" ")-1);return e=e.substr(e.indexOf(" ")+1),"typo"==t?this._isTypo(e.toLowerCase(),n.toLowerCase()):"nocase"==t?e.toLowerCase()==n.toLowerCase():"regex"==t?(e=new RegExp(e),e.test(n)):void 0},_isTypo:function(e,n){var t=damerauLevenshtein(e,n);return t<Math.ceil(Math.sqrt(e.length)-1)?!0:!1}};
+    return matrix[a.length][b.length];
+};
+
+"use strict";window.Slang=window.Slang||{},window.Slang.langslang={compare:function(n,e){return Slang.logicslang.compare(n,e,this._compare)},_compare:function(n,e){if(n=n.trim(),e=e.trim(),0!==n.indexOf("#"))return n==e;var t=n.substr(1,n.indexOf(" ")-1);return n=n.substr(n.indexOf(" ")+1),"typo"==t?Slang.langslang._isTypo(n.toLowerCase(),e.toLowerCase()):"nocase"==t?n.toLowerCase()==e.toLowerCase():"regex"==t?(n=new RegExp(n),n.test(e)):void 0},_isTypo:function(n,e){var t=Slang.langslang._damerauLevenshtein(n,e);return t<Math.ceil(Math.sqrt(n.length)-1)?!0:!1}},window.Slang.langslang._damerauLevenshtein=function(n,e){var t=[];if(n==e)return 0;if(0==n.length)return e.length;if(0==e.length)return n.length;for(var a=0;a<n.length+1;a++){t[a]=[];for(var r=0;r<e.length+1;r++)0==a||0==r?t[a][r]=Math.max(a,r):(t[a][r]=Math.min(t[a-1][r]+1,t[a][r-1]+1,t[a-1][r-1]+(n[a-1]==e[r-1]?0:1)),r>1&&a>1&&n[a-1]==e[r-2]&&n[a-2]==e[r-1]&&(t[a][r]=Math.min(t[a][r],t[a-2][r-2]+1)))}return t[n.length][e.length]};
 'use strict';
 window.Slang = window.Slang || {};
 window.Slang.logicslang = {
