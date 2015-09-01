@@ -1,5 +1,6 @@
 # capiraslang
 `capiraslang` is a family of world's most awesome javascript libraries to evaluate user input from quizzes.
+Essentially it is a collection of Functions with type `String x String -> bool` that compare if to Strings mean the same. 
 
 The family consists of:
 - `mathslang` world's most awesome js-lib to match mathematical expressions. by tino 
