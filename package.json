@@ -1,7 +1,7 @@
 {
-  "name": "capiraslang",
+  "name": "slang",
   "version": "1.0.0",
-  "description": "capiraslang is world's most awesome lib to evaluate quiz answers",
+  "description": "slang is world's most awesome lib to evaluate quiz answers",
   "main": "index.js",
   "directories": {
     "test": "test"
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/capira12/capiraslang.git"
+    "url": "git+https://github.com/capira12/slang.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/capira12/capiraslang/issues"
+    "url": "https://github.com/capira12/slang/issues"
   },
-  "homepage": "https://github.com/capira12/capiraslang#readme",
+  "homepage": "https://github.com/capira12/slang#readme",
   "devDependencies": {
     "bower": "^1.5.2",
     "browser-sync": "^2.8.2",

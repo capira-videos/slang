@@ -1,17 +1,17 @@
 {
-    "name": "capiraslang",
+    "name": "slang",
     "version": "1.0.1",
-    "homepage": "https://github.com/capira12/capiraslang",
+    "homepage": "https://github.com/capira12/slang",
     "authors": [
         "(Tino Steffens <tino@capira.de>)",
         "(Stephanie Lund <stef@capira.de>)",
         "(Robin Linus <robin@capira.de>)"
     ],
-    "description": "capiraslang is world's most awesome lib to evaluate mathematical expressions as quiz answers.",
-    "main": "dist/capiraslang/capiraslang.min.js",
+    "description": "slang is world's most awesome lib to evaluate mathematical expressions as quiz answers.",
+    "main": "dist/slang/slang.min.js",
     "keywords": [
         "capira",
-        "capiraslang"
+        "slang"
     ],
     "license": "MIT",
     "ignore": [

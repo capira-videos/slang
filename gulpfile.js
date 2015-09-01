@@ -8,7 +8,7 @@ var reload = browserSync.reload;
 
 // Build process (concat and minify)
 
-function capiraslangTask(slang) {
+function slangTask(slang) {
     return gulp.src(['src/' + slang + '/**/*.js', '!src/' + slang + '/demo'])
         .pipe(concat('' + slang + '.js'))
         .pipe(gulp.dest('dist/' + slang + '/'))
@@ -18,32 +18,32 @@ function capiraslangTask(slang) {
 }
 
 gulp.task('mathslang', function() {
-    return capiraslangTask('mathslang');
+    return slangTask('mathslang');
 });
 
 gulp.task('colors', function() {
-    return capiraslangTask('colors');
+    return slangTask('colors');
 });
 
 gulp.task('hausdorff-metric', function() {
-    return capiraslangTask('hausdorff-metric');
+    return slangTask('hausdorff-metric');
 });
 
 gulp.task('langslang', function() {
-    return capiraslangTask('langslang');
+    return slangTask('langslang');
 });
 
 gulp.task('logicslang', function() {
-    return capiraslangTask('logicslang');
+    return slangTask('logicslang');
 });
 
-gulp.task('capiraslang', function() {
-    return gulp.src(['dist/**/*.js','!capiraslang'])
-        .pipe(concat('capiraslang.js'))
-        .pipe(gulp.dest('dist/capiraslang/'))
+gulp.task('slang', function() {
+    return gulp.src(['dist/**/*.js','!slang'])
+        .pipe(concat('slang.js'))
+        .pipe(gulp.dest('dist/slang/'))
         .pipe(uglify())
-        .pipe(rename('capiraslang.min.js'))
-        .pipe(gulp.dest('dist/capiraslang/'));
+        .pipe(rename('slang.min.js'))
+        .pipe(gulp.dest('dist/slang/'));
 });
 
 
