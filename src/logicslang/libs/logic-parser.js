@@ -15,7 +15,7 @@ window.LogicParser = function(compareFn) {
 
     this.getTokens = function(input) {
         var tokens = []
-        tokens = input.split(/(#and|#or|#not|<|>)/);
+        tokens = input.split(/(#and|#or|#not|#var|<&|&|<|>)/);
         tokens = tokens.map(function(t) {
             return t.trim();
         });
@@ -56,6 +56,20 @@ window.LogicParser = function(compareFn) {
             if (rightParen != '>') {
                 throw 'ERROR: Mismatched parentheses';
             }
+            return value;
+        } else if (token == '<&') {
+            var saved = this.givenValue;
+            this.givenValue = this.tokens.shift();
+            var amp = this.tokens.shift();
+            if (amp != '&') {
+                throw 'ERROR: Mismatched &';
+            }
+            value = this.expression();
+            var rightParen = this.tokens.shift();
+            if (rightParen != '>') {
+                throw 'ERROR: Mismatched parentheses';
+            }
+            this.givenValue = saved;
             return value;
         } else if (token == '>') {
             throw 'ERROR: Mismatched parentheses';

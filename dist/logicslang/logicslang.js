@@ -2,9 +2,22 @@
 window.Slang = window.Slang || {};
 window.Slang.logicslang = {
     // Handles logical operators #or, #and, and #not
-    compare: function(expectedValue, givenValue, compareFn) {
+    compare: function(expectedValue, givenValue, compareFn, variables) {
+    	if (variables) {
+    		expectedValue = this.replaceVariables(expectedValue, variables)
+    	}
         var lp = new LogicParser(compareFn);
         return lp.eval(expectedValue, givenValue);
+    },
+
+    // variables is an object of key -> value pairs
+    // replaces any @variable_name 
+    replaceVariables: function(expectedValue, variables) {
+    	for(var key in variables) {
+    		var regexp = new RegExp("@" + key, "g");
+    		expectedValue = expectedValue.replace(regexp, variables[key]);
+    	}
+    	return expectedValue;
     }
 };
 
@@ -25,7 +38,7 @@ window.LogicParser = function(compareFn) {
 
     this.getTokens = function(input) {
         var tokens = []
-        tokens = input.split(/(#and|#or|#not|<|>)/);
+        tokens = input.split(/(#and|#or|#not|#var|<&|&|<|>)/);
         tokens = tokens.map(function(t) {
             return t.trim();
         });
@@ -66,6 +79,20 @@ window.LogicParser = function(compareFn) {
             if (rightParen != '>') {
                 throw 'ERROR: Mismatched parentheses';
             }
+            return value;
+        } else if (token == '<&') {
+            var saved = this.givenValue;
+            this.givenValue = this.tokens.shift();
+            var amp = this.tokens.shift();
+            if (amp != '&') {
+                throw 'ERROR: Mismatched &';
+            }
+            value = this.expression();
+            var rightParen = this.tokens.shift();
+            if (rightParen != '>') {
+                throw 'ERROR: Mismatched parentheses';
+            }
+            this.givenValue = saved;
             return value;
         } else if (token == '>') {
             throw 'ERROR: Mismatched parentheses';
