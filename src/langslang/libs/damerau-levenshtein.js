@@ -1,5 +1,5 @@
-window.Slang.langslang._damerauLevenshtein = function(a, b) {
-    var matrix = []
+Slang.langslang._damerauLevenshtein = function(a, b) {
+    var matrix = [];
 
     // check the easy cases first
     if (a == b) {

@@ -1,6 +1,6 @@
 'use strict';
-window.Slang = window.Slang || {};
-window.Slang.mathslang = {
+var Slang = Slang || {};
+Slang.mathslang = {
     compare: function(expectedValue, givenValue) {
         return Slang.logicslang.compare(expectedValue, givenValue, this._compare);
     },
@@ -8,7 +8,6 @@ window.Slang.mathslang = {
         //Inputs could be a Number so we convert them to String:
         givenValue = givenValue + '';
         expectedValue = expectedValue + '';
-        var that = this;
         givenValue = givenValue.trim();
         expectedValue = expectedValue.trim();
         if (expectedValue.indexOf('#') === 0) {
@@ -348,6 +347,7 @@ function matchApprox(a, b, e) {
 		return Math.abs(a-b) <= e;
 	} catch(e) { return false; }
 }
+/*
 function matchDebug(a){
 	console.log("======================================");
 	a=Syntax.present(a);	console.log(Syntax.string(a));
@@ -366,7 +366,7 @@ function matchDebug(a){
 	a=a.combine();			console.log(a.string());
 	a=a.expow();			console.log(a.string());
 	console.log("======================================");
-};
+};*/
 // may rename into `Mantic' or `Mantrix'
 function Seman() {};
 //=============================================================================

@@ -45,10 +45,17 @@ gulp.task('logicslang', function() {
 });
 
 gulp.task('build', ['mathslang', 'colorslang', 'hausdorffslang', 'langslang', 'logicslang'], function() {
-    return gulp.src(['dist/**/*.js', '!dist/slang.js', '!dist/slang.min.js'])
+    return gulp.src(['dist/**/*.js','!dist/**/*min.js', '!dist/slang.js', '!dist/slang.min.js'])
         .pipe(concat('slang.js'))
-        .pipe(gulp.dest('dist/'))
-        .pipe(uglify())
+        .pipe(uglify({
+            compress: {
+                drop_console: true,
+                booleans: true,
+                sequences: true,
+                dead_code: true,
+                loops:true
+            }
+        }))
         .pipe(rename('slang.min.js'))
         .pipe(gulp.dest('dist/'));
 });

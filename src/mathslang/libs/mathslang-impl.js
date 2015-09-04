@@ -30,6 +30,7 @@ function matchApprox(a, b, e) {
 		return Math.abs(a-b) <= e;
 	} catch(e) { return false; }
 }
+/*
 function matchDebug(a){
 	console.log("======================================");
 	a=Syntax.present(a);	console.log(Syntax.string(a));
@@ -48,4 +49,4 @@ function matchDebug(a){
 	a=a.combine();			console.log(a.string());
 	a=a.expow();			console.log(a.string());
 	console.log("======================================");
-};
+};*/
