@@ -18,14 +18,17 @@ describe('logicslang', function() {
         expect(ls.compare('#not y', 'y', _compareFn)).toEqual(false);
     });
     it('can compare Strings containing #and and #not', function() {
-        expect(ls.compare('x #and #not y', 'x', _compareFn)).toEqual(true);
-        expect(ls.compare('x #and #not y', 'y', _compareFn)).toEqual(false);
+        expect(ls.compare('x #and <#not y>', 'x', _compareFn)).toEqual(true);
+        expect(ls.compare('x #and <#not y>', 'y', _compareFn)).toEqual(false);
     });
     it('can compare Strings containing #or and #not', function() {
-        expect(ls.compare('#not y #or x', 'x', _compareFn)).toEqual(true);
-        expect(ls.compare('#not y #or x', 'y', _compareFn)).toEqual(false);
-        expect(ls.compare('y #or #not x', 'x', _compareFn)).toEqual(false);
-        expect(ls.compare('y #or #not x', 'y', _compareFn)).toEqual(true);
+        expect(ls.compare('<#not y> #or x', 'x', _compareFn)).toEqual(true);
+        expect(ls.compare('<#not y> #or x', 'y', _compareFn)).toEqual(false);
+        expect(ls.compare('y #or <#not x>', 'x', _compareFn)).toEqual(false);
+        expect(ls.compare('y #or <#not x>', 'y', _compareFn)).toEqual(true);
 
     });
+    it('can replace variables in a String', function() {
+        expect(ls.compare('@variable', 'x', _compareFn, {variable:'x'})).toEqual(true);
+    })
 });

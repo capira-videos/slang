@@ -1,14 +1,11 @@
-'use strict';
-var  LogicParser = function(compareFn) {
+window.LogicParser = function(compareFn) {
+    this.compareFn = compareFn;
 
-    var tokens = [];
-    var givenValue = '';
-    var error = 'ERROR: Mismatched parentheses';
 
-    this.compare = function(expectedValue, _givenValue) {
-        tokens = getTokens(expectedValue);
-        givenValue = _givenValue;
-        return expression();
+    this.eval = function(expectedValue, givenValue) {
+        this.tokens = this.getTokens(expectedValue);
+        this.givenValue = givenValue;
+        return this.expression();
     };
 
     // Parse string into a set of tokens, where tokens are one of:
@@ -16,30 +13,31 @@ var  LogicParser = function(compareFn) {
     // #and, #or, or #not
     // values (anything other than the above)
 
-    function getTokens(input) {
-        var _tokens = [];
-        _tokens = input.split(/(#and|#or|#not|<|>)/);
-        _tokens = _tokens.map(function(t) {
+    this.getTokens = function(input) {
+        var tokens = []
+        tokens = input.split(/(#and|#or|#not|#var|<&|&|<|>)/);
+        tokens = tokens.map(function(t) {
             return t.trim();
         });
-        _tokens = _tokens.filter(function(t) {
+        tokens = tokens.filter(function(t) {
             return t.length > 0;
-        });
-        return _tokens;
-    }
+        })
+
+        return tokens;
+    };
 
     // deal with the logical operators #and, #or, #not
-    function expression() {
-        if (tokens[0] == '#not') {
-            tokens.shift();
-            return !terminal();
+    this.expression = function() {
+        if (this.tokens[0] == '#not') {
+            this.tokens.shift();
+            return !this.terminal();
         } else {
-            var t1 = terminal();
-            if (tokens[0] === '#and' || tokens[0] === '#or') {
-                var operator = tokens.shift();
-                var t2 = terminal();
+            var t1 = this.terminal();
+            if (this.tokens[0] == '#and' || this.tokens[0] == '#or') {
+                var operator = this.tokens.shift()
+                var t2 = this.terminal();
 
-                if (operator === '#and') {
+                if (operator == '#and') {
                     return t1 && t2;
                 } else {
                     return t1 || t2;
@@ -47,21 +45,36 @@ var  LogicParser = function(compareFn) {
             }
             return t1;
         }
-    }
+    };
 
     // handle parens and pass values off for evaluation
-    function terminal() {
-        var token = tokens.shift();
-        if (token === '<') {
-            var rightParen = tokens.shift(); // remove the following right paren
-            if (rightParen !== '>') {
-                throw error;
+    this.terminal = function() {
+        var token = this.tokens.shift();
+        if (token == '<') {
+            value = this.expression();
+            var rightParen = this.tokens.shift(); // remove the following right paren
+            if (rightParen != '>') {
+                throw 'ERROR: Mismatched parentheses';
             }
-            return expression();
-        } else if (token === '>') {
-            throw error;
+            return value;
+        } else if (token == '<&') {
+            var saved = this.givenValue;
+            this.givenValue = this.tokens.shift();
+            var amp = this.tokens.shift();
+            if (amp != '&') {
+                throw 'ERROR: Mismatched &';
+            }
+            value = this.expression();
+            var rightParen = this.tokens.shift();
+            if (rightParen != '>') {
+                throw 'ERROR: Mismatched parentheses';
+            }
+            this.givenValue = saved;
+            return value;
+        } else if (token == '>') {
+            throw 'ERROR: Mismatched parentheses';
         } else {
-            return compareFn(token, givenValue);
+            return this.compareFn(token, this.givenValue)
         }
-    }
+    };
 };

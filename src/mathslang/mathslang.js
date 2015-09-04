@@ -1,13 +1,14 @@
 'use strict';
-var Slang = Slang || {};
-Slang.mathslang = {
-    compare: function(expectedValue, givenValue) {
-        return Slang.logicslang.compare(expectedValue, givenValue, this._compare);
+window.Slang = window.Slang || {};
+window.Slang.mathslang = {
+    compare: function(expectedValue, givenValue, variables) {
+        return Slang.logicslang.compare(expectedValue, givenValue, this._compare, variables);
     },
     _compare: function(expectedValue, givenValue) {
         //Inputs could be a Number so we convert them to String:
         givenValue = givenValue + '';
         expectedValue = expectedValue + '';
+        var that = this;
         givenValue = givenValue.trim();
         expectedValue = expectedValue.trim();
         if (expectedValue.indexOf('#') === 0) {
