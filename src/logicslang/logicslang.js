@@ -7,7 +7,7 @@ window.Slang.logicslang = {
     		expectedValue = this.replaceVariables(expectedValue, variables)
     	}
         var lp = new LogicParser(compareFn);
-        return lp.eval(expectedValue, givenValue);
+        return lp.compare(expectedValue, givenValue);
     },
 
     // variables is an object of key -> value pairs

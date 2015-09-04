@@ -1,60 +1,33 @@
-
 'use strict';
-window.Slang = window.Slang || {};
-window.Slang.colorslang = {
-    compare: function(expected, given) {
-        console.log(this.rgbToHex(given));
-        return expected === this.rgbToHex(given);
-    },
-    _hexToRgb: function(hex) {
-        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
-    },
-    rgbToHex: function(c) {
-        return '#' + ((1 << 24) + (c[0] << 16) + (c[1] << 8) + c[2]).toString(16).slice(1);
+var Slang = Slang || {};
+Slang.hausdorffslang = (function() {
+
+    function compare(X, Y, translateX, translateY, scale) {
+        var Z = _normalize(X, Y, translateX, translateY, scale);
+        return 1 - Math.max(_maxEuclideanDistance(Z.X, Z.Y), _maxEuclideanDistance(Z.Y, Z.X));
     }
-};
 
-
-"use strict";window.Slang=window.Slang||{},window.Slang.colorslang={compare:function(n,r){return console.log(this.rgbToHex(r)),n===this.rgbToHex(r)},_hexToRgb:function(n){var r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(n);return r?{r:parseInt(r[1],16),g:parseInt(r[2],16),b:parseInt(r[3],16)}:null},rgbToHex:function(n){return"#"+((1<<24)+(n[0]<<16)+(n[1]<<8)+n[2]).toString(16).slice(1)}};
-'use strict';
-window.Slang = window.Slang || {};
-window.Slang.hausdorffslang = {
-
-
-    compare: function(X, Y, translateX, translateY, scale) {
-        var Z = this._normalize(X, Y, translateX, translateY, scale);
-        return 1 - Math.max(this._maxeuclideanDistance(Z.X, Z.Y), this._maxeuclideanDistance(Z.Y, Z.X));
-    },
-
-    _euclideanDistance: function(a, b) {
+    function _euclideanDistance(a, b) {
         var dx = a.x - b.x;
         var dy = a.y - b.y;
         return Math.sqrt(dx * dx + dy * dy);
-    },
+    }
 
-    _minEuclideanDistance: function(a, B) {
-        var that = this;
+    function _minEuclideanDistance(a, B) {
         return B.reduce(function(akku, curr) {
-            var d = that._euclideanDistance(a, curr);
+            var d = _euclideanDistance(a, curr);
             return akku > d ? d : akku;
         }, Infinity);
-    },
+    }
 
-    _maxeuclideanDistance: function(A, B) {
-        var that = this;
+    function _maxEuclideanDistance(A, B) {
         return A.reduce(function(akku, curr) {
-            var dmin = that._minEuclideanDistance(curr, B);
+            var dmin = _minEuclideanDistance(curr, B);
             return akku < dmin ? dmin : akku;
         }, 0);
-    },
+    }
 
-
-    _calcRelativeOrigin: function(A) {
+    function _calcRelativeOrigin(A) {
         var origin = A.reduce(function(akku, curr) {
             return {
                 x0: akku.x0 + curr.x,
@@ -67,20 +40,20 @@ window.Slang.hausdorffslang = {
         origin.x0 /= A.length;
         origin.y0 /= A.length;
         return origin;
-    },
+    }
 
-    _centerSet: function(A, origin, translateX, translateY) {
+    function _centerSet(A, origin, translateX, translateY) {
         var x0 = translateX ? origin.x0 : 0;
         var y0 = translateY ? origin.y0 : 0;
         return A.map(function(c) {
             return {
                 x: c.x - x0,
                 y: c.y - y0
-            }
+            };
         });
-    },
+    }
 
-    _calcBoundingBox: function(A) {
+    function _calcBoundingBox(A) {
         return A.reduce(function(box, c) {
             return {
                 xmax: Math.max(c.x, box.xmax),
@@ -93,10 +66,10 @@ window.Slang.hausdorffslang = {
             ymax: -Infinity,
             xmin: Infinity,
             ymin: Infinity
-        })
-    },
+        });
+    }
 
-    _boundingBoxSet: function(B, boxA, boxB, origin) {
+    function _boundingBoxSet(B, boxA, boxB, origin) {
         var xdistA = Math.abs(boxA.xmax - boxA.xmin);
         var xdistB = Math.abs(boxB.xmax - boxB.xmin);
         var ydistA = Math.abs(boxA.ymax - boxA.ymin);
@@ -108,25 +81,25 @@ window.Slang.hausdorffslang = {
             return {
                 x: origin.x0 + (origin.x0 - c.x) / scalingFactor,
                 y: origin.y0 + (origin.y0 - c.y) / scalingFactor
-            }
-        })
-    },
+            };
+        });
+    }
 
-    _normalize: function(A, B, translateX, translateY, scale) {
+    function _normalize(A, B, translateX, translateY, scale) {
         if (translateX || translateY || scale) {
 
-            var originA = this._calcRelativeOrigin(A);
-            var originB = this._calcRelativeOrigin(B);
+            var originA = _calcRelativeOrigin(A);
+            var originB = _calcRelativeOrigin(B);
 
             if (scale) {
-                var boxA = this._calcBoundingBox(A);
-                var boxB = this._calcBoundingBox(B);
-                B = this._boundingBoxSet(B, boxA, boxB, originB);
+                var boxA = _calcBoundingBox(A);
+                var boxB = _calcBoundingBox(B);
+                B = _boundingBoxSet(B, boxA, boxB, originB);
             }
 
             if (translateX || translateY) {
-                A = this._centerSet(A, originA, translateX, translateY);
-                B = this._centerSet(B, originB, translateX, translateY);
+                A = _centerSet(A, originA, translateX, translateY);
+                B = _centerSet(B, originB, translateX, translateY);
             }
 
         }
@@ -136,16 +109,45 @@ window.Slang.hausdorffslang = {
             Y: B
         };
     }
-};
 
-"use strict";window.Slang=window.Slang||{},window.Slang.hausdorffslang={compare:function(n,i,t,a,e){var r=this._normalize(n,i,t,a,e);return 1-Math.max(this._maxeuclideanDistance(r.X,r.Y),this._maxeuclideanDistance(r.Y,r.X))},_euclideanDistance:function(n,i){var t=n.x-i.x,a=n.y-i.y;return Math.sqrt(t*t+a*a)},_minEuclideanDistance:function(n,i){var t=this;return i.reduce(function(i,a){var e=t._euclideanDistance(n,a);return i>e?e:i},1/0)},_maxeuclideanDistance:function(n,i){var t=this;return n.reduce(function(n,a){var e=t._minEuclideanDistance(a,i);return e>n?e:n},0)},_calcRelativeOrigin:function(n){var i=n.reduce(function(n,i){return{x0:n.x0+i.x,y0:n.y0+i.y}},{x0:0,y0:0});return i.x0/=n.length,i.y0/=n.length,i},_centerSet:function(n,i,t,a){var e=t?i.x0:0,r=a?i.y0:0;return n.map(function(n){return{x:n.x-e,y:n.y-r}})},_calcBoundingBox:function(n){return n.reduce(function(n,i){return{xmax:Math.max(i.x,n.xmax),xmin:Math.min(i.x,n.xmin),ymax:Math.max(i.y,n.ymax),ymin:Math.min(i.y,n.ymin)}},{xmax:-(1/0),ymax:-(1/0),xmin:1/0,ymin:1/0})},_boundingBoxSet:function(n,i,t,a){var e=Math.abs(i.xmax-i.xmin),r=Math.abs(t.xmax-t.xmin),c=Math.abs(i.ymax-i.ymin),u=Math.abs(t.ymax-t.ymin),x=r/e,m=u/c,o=2*x*m/(x+m);return n.map(function(n){return{x:a.x0+(a.x0-n.x)/o,y:a.y0+(a.y0-n.y)/o}})},_normalize:function(n,i,t,a,e){if(t||a||e){var r=this._calcRelativeOrigin(n),c=this._calcRelativeOrigin(i);if(e){var u=this._calcBoundingBox(n),x=this._calcBoundingBox(i);i=this._boundingBoxSet(i,u,x,c)}(t||a)&&(n=this._centerSet(n,r,t,a),i=this._centerSet(i,c,t,a))}return{X:n,Y:i}}};
+    return {
+        compare: compare
+    };
+})();
+
 'use strict';
-window.Slang = window.Slang || {};
-window.Slang.langslang = {
-    compare:function(expectedValue,givenValue){
-        return Slang.logicslang.compare(expectedValue,givenValue,this._compare);
-    },
-    _compare: function(expectedValue, givenValue) {
+var Slang = Slang || {};
+Slang.colorslang = (function() {
+    function compare(expected, given) {
+        return expected === rgbToHex(given);
+    }
+
+    function rgbToHex(c) {
+        return '#' + ((1 << 24) + (c[0] << 16) + (c[1] << 8) + c[2]).toString(16).slice(1);
+    }
+    /*
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+    */
+    return {
+        compare: compare
+    };
+})();
+
+'use strict';
+var Slang = Slang || {};
+Slang.langslang = (function() {
+    function compare(expectedValue, givenValue) {
+        return Slang.logicslang.compare(expectedValue, givenValue, _compare);
+    }
+
+    function _compare(expectedValue, givenValue) {
 
         expectedValue = expectedValue.trim();
         givenValue = givenValue.trim();
@@ -154,32 +156,38 @@ window.Slang.langslang = {
             var prefix = expectedValue.substr(1, expectedValue.indexOf(' ') - 1);
             expectedValue = expectedValue.substr(expectedValue.indexOf(' ') + 1);
 
-            if (prefix == 'typo') {
-                return Slang.langslang._isTypo(expectedValue.toLowerCase(), givenValue.toLowerCase());
-            } else if (prefix == 'nocase') {
-                return expectedValue.toLowerCase() == givenValue.toLowerCase();
-            } else if (prefix == 'regex') {
+            if (prefix === 'typo') {
+                return isTypo(toLowerCase(expectedValue), toLowerCase(givenValue));
+            } else if (prefix === 'nocase') {
+                return toLowerCase(expectedValue) === toLowerCase(givenValue);
+            } else if (prefix === 'regex') {
                 expectedValue = new RegExp(expectedValue);
                 return expectedValue.test(givenValue);
             }
         } else {
-            return (expectedValue == givenValue);
+            return (expectedValue === givenValue);
         }
-    },
-
-    _isTypo: function(a, b) {
-        var dist = Slang.langslang._damerauLevenshtein(a, b);
-        // somewhat arbitrary metric
-        if (dist < Math.ceil(Math.sqrt(a.length) - 1)) {
-            return true;
-        }
-        return false;
     }
 
-};
+    function isTypo(a, b) {
+        var dist = Slang.langslang._damerauLevenshtein(a, b);
+        // somewhat arbitrary metric
+        return (dist < Math.ceil(Math.sqrt(a.length) - 1));
+    }
 
-window.Slang.langslang._damerauLevenshtein = function(a, b) {
-    var matrix = []
+    //this function wrapps String.toLowerCase for minification purposes
+    function toLowerCase(a){
+        return a.toLowerCase();
+    }
+
+    return {
+        compare: compare
+    };
+
+})();
+
+Slang.langslang._damerauLevenshtein = function(a, b) {
+    var matrix = [];
 
     // check the easy cases first
     if (a == b) {
@@ -216,7 +224,6 @@ window.Slang.langslang._damerauLevenshtein = function(a, b) {
     return matrix[a.length][b.length];
 };
 
-"use strict";window.Slang=window.Slang||{},window.Slang.langslang={compare:function(n,e){return Slang.logicslang.compare(n,e,this._compare)},_compare:function(n,e){if(n=n.trim(),e=e.trim(),0!==n.indexOf("#"))return n==e;var t=n.substr(1,n.indexOf(" ")-1);return n=n.substr(n.indexOf(" ")+1),"typo"==t?Slang.langslang._isTypo(n.toLowerCase(),e.toLowerCase()):"nocase"==t?n.toLowerCase()==e.toLowerCase():"regex"==t?(n=new RegExp(n),n.test(e)):void 0},_isTypo:function(n,e){var t=Slang.langslang._damerauLevenshtein(n,e);return t<Math.ceil(Math.sqrt(n.length)-1)?!0:!1}},window.Slang.langslang._damerauLevenshtein=function(n,e){var t=[];if(n==e)return 0;if(0==n.length)return e.length;if(0==e.length)return n.length;for(var a=0;a<n.length+1;a++){t[a]=[];for(var r=0;r<e.length+1;r++)0==a||0==r?t[a][r]=Math.max(a,r):(t[a][r]=Math.min(t[a-1][r]+1,t[a][r-1]+1,t[a-1][r-1]+(n[a-1]==e[r-1]?0:1)),r>1&&a>1&&n[a-1]==e[r-2]&&n[a-2]==e[r-1]&&(t[a][r]=Math.min(t[a][r],t[a-2][r-2]+1)))}return t[n.length][e.length]};
 'use strict';
 window.Slang = window.Slang || {};
 window.Slang.logicslang = {
@@ -226,7 +233,7 @@ window.Slang.logicslang = {
     		expectedValue = this.replaceVariables(expectedValue, variables)
     	}
         var lp = new LogicParser(compareFn);
-        return lp.eval(expectedValue, givenValue);
+        return lp.compare(expectedValue, givenValue);
     },
 
     // variables is an object of key -> value pairs
@@ -240,14 +247,17 @@ window.Slang.logicslang = {
     }
 };
 
-window.LogicParser = function(compareFn) {
-    this.compareFn = compareFn;
+'use strict';
+var LogicParser = function(compareFn) {
 
+    var tokens = [];
+    var givenValue = '';
+    var error = 'ERROR: Mismatched parentheses';
 
-    this.eval = function(expectedValue, givenValue) {
-        this.tokens = this.getTokens(expectedValue);
-        this.givenValue = givenValue;
-        return this.expression();
+    this.compare = function(expectedValue, _givenValue) {
+        tokens = getTokens(expectedValue);
+        givenValue = _givenValue;
+        return expression();
     };
 
     // Parse string into a set of tokens, where tokens are one of:
@@ -255,31 +265,30 @@ window.LogicParser = function(compareFn) {
     // #and, #or, or #not
     // values (anything other than the above)
 
-    this.getTokens = function(input) {
-        var tokens = []
-        tokens = input.split(/(#and|#or|#not|#var|<&|&|<|>)/);
-        tokens = tokens.map(function(t) {
+    function getTokens(input) {
+        var _tokens = [];
+        _tokens = input.split(/(#and|#or|#not|<&|&|<|>)/);
+        _tokens = _tokens.map(function(t) {
             return t.trim();
         });
-        tokens = tokens.filter(function(t) {
+        _tokens = _tokens.filter(function(t) {
             return t.length > 0;
-        })
-
-        return tokens;
-    };
+        });
+        return _tokens;
+    }
 
     // deal with the logical operators #and, #or, #not
-    this.expression = function() {
-        if (this.tokens[0] == '#not') {
-            this.tokens.shift();
-            return !this.terminal();
+    function expression() {
+        if (tokens[0] == '#not') {
+            tokens.shift();
+            return !terminal();
         } else {
-            var t1 = this.terminal();
-            if (this.tokens[0] == '#and' || this.tokens[0] == '#or') {
-                var operator = this.tokens.shift()
-                var t2 = this.terminal();
+            var t1 = terminal();
+            if (tokens[0] === '#and' || tokens[0] === '#or') {
+                var operator = tokens.shift();
+                var t2 = terminal();
 
-                if (operator == '#and') {
+                if (operator === '#and') {
                     return t1 && t2;
                 } else {
                     return t1 || t2;
@@ -287,41 +296,41 @@ window.LogicParser = function(compareFn) {
             }
             return t1;
         }
-    };
+    }
 
     // handle parens and pass values off for evaluation
-    this.terminal = function() {
-        var token = this.tokens.shift();
+    function terminal() {
+        var token = tokens.shift();
+        var value = '';
         if (token == '<') {
-            value = this.expression();
-            var rightParen = this.tokens.shift(); // remove the following right paren
+            value = expression();
+            var rightParen = tokens.shift(); // remove the following right paren
             if (rightParen != '>') {
-                throw 'ERROR: Mismatched parentheses';
+                throw error;
             }
             return value;
         } else if (token == '<&') {
-            var saved = this.givenValue;
-            this.givenValue = this.tokens.shift();
-            var amp = this.tokens.shift();
+            var saved = givenValue;
+            givenValue = tokens.shift();
+            var amp = tokens.shift();
             if (amp != '&') {
-                throw 'ERROR: Mismatched &';
+                throw error;
             }
-            value = this.expression();
-            var rightParen = this.tokens.shift();
+            value = expression();
+            var rightParen = tokens.shift();
             if (rightParen != '>') {
-                throw 'ERROR: Mismatched parentheses';
+                throw error;
             }
-            this.givenValue = saved;
+            givenValue = saved;
             return value;
         } else if (token == '>') {
-            throw 'ERROR: Mismatched parentheses';
+            throw error;
         } else {
-            return this.compareFn(token, this.givenValue)
+            return compareFn(token, givenValue);
         }
-    };
+    }
 };
 
-"use strict";window.Slang=window.Slang||{},window.Slang.logicslang={compare:function(t,e,i,n){n&&(t=this.replaceVariables(t,n));var s=new LogicParser(i);return s.eval(t,e)},replaceVariables:function(t,e){for(var i in e){var n=new RegExp("@"+i,"g");t=t.replace(n,e[i])}return t}},window.LogicParser=function(t){this.compareFn=t,this.eval=function(t,e){return this.tokens=this.getTokens(t),this.givenValue=e,this.expression()},this.getTokens=function(t){var e=[];return e=t.split(/(#and|#or|#not|#var|<&|&|<|>)/),e=e.map(function(t){return t.trim()}),e=e.filter(function(t){return t.length>0})},this.expression=function(){if("#not"==this.tokens[0])return this.tokens.shift(),!this.terminal();var t=this.terminal();if("#and"==this.tokens[0]||"#or"==this.tokens[0]){var e=this.tokens.shift(),i=this.terminal();return"#and"==e?t&&i:t||i}return t},this.terminal=function(){var t=this.tokens.shift();if("<"==t){value=this.expression();var e=this.tokens.shift();if(">"!=e)throw"ERROR: Mismatched parentheses";return value}if("<&"==t){var i=this.givenValue;this.givenValue=this.tokens.shift();var n=this.tokens.shift();if("&"!=n)throw"ERROR: Mismatched &";value=this.expression();var e=this.tokens.shift();if(">"!=e)throw"ERROR: Mismatched parentheses";return this.givenValue=i,value}if(">"==t)throw"ERROR: Mismatched parentheses";return this.compareFn(t,this.givenValue)}};
 'use strict';
 window.Slang = window.Slang || {};
 window.Slang.mathslang = {
@@ -672,6 +681,7 @@ function matchApprox(a, b, e) {
 		return Math.abs(a-b) <= e;
 	} catch(e) { return false; }
 }
+/*
 function matchDebug(a){
 	console.log("======================================");
 	a=Syntax.present(a);	console.log(Syntax.string(a));
@@ -690,7 +700,7 @@ function matchDebug(a){
 	a=a.combine();			console.log(a.string());
 	a=a.expow();			console.log(a.string());
 	console.log("======================================");
-};
+};*/
 // may rename into `Mantic' or `Mantrix'
 function Seman() {};
 //=============================================================================
@@ -1343,4 +1353,3 @@ Syntax.stringQ = function(q) {
 Syntax.stringE = function(e) {
 	return '(' + Syntax.string(e.radix) + ')^(' + Syntax.string(e.power) + ')';
 };
-"use strict";function Imag(){}function I(){}function Lex(){}function match(e,n){try{return Lex.empty(e)||Lex.empty(n)?!1:(e=Seman.present(e),n=Seman.present(n),e.calc()==n.calc()?!0:(e=e.simplify(3),n=n.simplify(3),console.log(e.string()+"=="+n.string()),e.string()==n.string()))}catch(t){return!1}}function matchSyntax(e,n){try{return Lex.empty(e)||Lex.empty(n)?!1:(e=Syntax.present(e),n=Syntax.present(n),Syntax.string(e)==Syntax.string(n))}catch(t){return!1}}function matchApprox(e,n,t){"number"==typeof e&&(e=""+e),"number"==typeof n&&(n=""+n);try{return Lex.empty(e)||Lex.empty(n)?!1:(e=Seman.present(e).calc(),n=Seman.present(n).calc(),isNaN(e)||isNaN(n)?!1:Math.abs(e-n)<=t)}catch(t){return!1}}function matchDebug(e){console.log("======================================"),e=Syntax.present(e),console.log(Syntax.string(e)),e=Seman.represent(e),console.log(e.string()),console.log("======================================"),e=e.expand(),console.log(e.string()),e=e.combine(),console.log(e.string()),e=e.expow(),console.log(e.string()),console.log("--------------------------------------"),e=e.expand(),console.log(e.string()),e=e.combine(),console.log(e.string()),e=e.expow(),console.log(e.string()),console.log("--------------------------------------"),e=e.expand(),console.log(e.string()),e=e.combine(),console.log(e.string()),e=e.expow(),console.log(e.string()),console.log("======================================")}function Seman(){}function Syntax(){}window.Slang=window.Slang||{},window.Slang.mathslang={compare:function(e,n,t){return Slang.logicslang.compare(e,n,this._compare,t)},_compare:function(e,n){n+="",e+="";if(n=n.trim(),e=e.trim(),0===e.indexOf("#")){var t=e.substr(1,e.indexOf(" ")-1);switch(e=e.substr(e.indexOf(" ")+1),t){case"equals":return match(e,n);case"identic":return matchSyntax(e,n);case"approx":var r=e.split("#epsilon");return matchApprox(r[0],n,r[1]);case"lt":return Number.parseFloat(n)<Number.parseFloat(e);case"leq":return Number.parseFloat(n)<=Number.parseFloat(e);case"gt":return Number.parseFloat(n)>Number.parseFloat(e);case"geq":return Number.parseFloat(n)>=Number.parseFloat(e);default:return e===n}}}},Imag.sort=function(e){var n=new I;return Object.keys(e).sort(function(e,n){return e.charCodeAt(0)-n.charCodeAt(0)}).forEach(function(t){n[t]=e[t]}),n},Imag.insert=function(e,n){Object.keys(n).forEach(function(t){e[t]?e[t]+=n[t]:e[t]=n[t],e[t]||delete e[t]})},Imag.clear=function(e){Object.keys(e).forEach(function(n){delete e[n]})},Imag.pow=function(e,n){Object.keys(e).forEach(function(t){n?e[t]*=n:delete e[t]})},Imag.akin=function(e,n){return Object.keys(e).toString()==Object.keys(n).toString()},Imag.equals=function(e,n){return JSON.stringify(e)==JSON.stringify(n)},Imag.empty=function(e){return 0==Object.keys(e).length},Imag.sortFunc=function(e,n){for(var t=Object.keys(e),r=Object.keys(n),s=Math.min(t.length,r.length),i=0;s>i;i++){if(t[i]<r[i])return-1;if(t[i]>r[i])return 1}var a=t.length-r.length;if(a)return a;for(var i=0;s>i;i++)if(a=e[t[i]]-n[r[i]])return a;return 0},Imag.strSortFunc=function(e,n){for(var t=Math.min(e.length,n.length),r=0;t>r;r++){if(e[r]<n[r])return-1;if(e[r]>n[r])return 1}return e.length-n.length},Imag.strSort=function(e){return e.split("").sort(function(e,n){return e.charCodeAt(0)-n.charCodeAt(0)}).reduce(function(e,n){return e+n},"")},Imag.strParse=function(e){for(var n=new I,t=0;t<e.length;t++){var r=e[t];n[r]?n[r]++:n[r]=1}return n},Imag.strValue=function(e){for(var n=1,t=0;t<e.length;t++)n*=e.charCodeAt(0);return n},Imag.len=function(e){return Object.keys(e).length},Imag.clone=function(e){return Object.keys(e).reduce(function(n,t){return n[t]=e[t],n},new I)},Imag.string=function(e){return Object.keys(e).reduce(function(n,t){var r=e[t];return n+(1==r?t:t+"^"+r)},"")},Lex.F={O:0,E:1,X:2,N:3,L:7},Lex.T=function(e,n){this.flag=e,this.code=n,this.inv=!1},Lex.G=function(e,n){this.exp=n,this.plu=e,this.test=function(e){return this.exp.test(e)}},Lex.SPAC=new Lex.G(!0,/^\s$/),Lex.BRAC=[new Lex.G(!1,/^\(|\[|\{$/),new Lex.G(!1,/^\)|\]|\}$/)],Lex.GRAM=[new Lex.G(!1,/^\+|\-|\*|\/$/),new Lex.G(!1,/^\^$/),new Lex.G(!1,/^[a-zA-Z]$/),new Lex.G(!0,/^[0-9]|\,|\.$/)],Lex.prep=function(e){return e=e.replace(/�/g,"^2"),e=e.replace(/�/g,"^3"),e=e.replace(/\u00B2/g,"^2"),e=e.replace(/\u00B3/g,"^3"),e=e.replace(/,/g,".")},Lex.iter=function(e){for(var n=[],t=this.prep(e).split("");t.length>0;){var r=0,s="";if(this.SPAC.test(t[0])){do t.shift();while(this.SPAC.test(t[0]))}else if(this.BRAC[0].test(t[0])){t.shift(),s="",r=this.F.L;for(var i=1,a="";i>0;){if(s+=a,0==t.length)throw")";a=t.shift(),i+=this.BRAC[0].test(a)?1:this.BRAC[1].test(a)?-1:0}n.push(new this.T(r,s))}else{for(;r<this.GRAM.length;){var u=this.GRAM[r];if(u.test(t[0]))do s=s.concat(t.shift());while(u.plu&&u.test(t[0]));s.length>0?(n.push(new this.T(r,s)),r=this.GRAM.length):r++}if(0==s.length)throw t.shift()}}return this.oper(n)},Lex.oper=function(e){var n=[],t=!1;for(var r in e){if(e[r].flag==this.F.O)switch(e[r].code){case"-":e[r].inv=!e[r].inv;case"+":break;case"/":t=!0;case"*":continue;default:throw"in `Lex.oper': Operator `"+e[r].code+"' has not been implemented."}else if(e[r].flag==this.F.E){if(0==n.length)throw"in `Lex.oper': Radix ahead `"+e[r].code+"' is undefined.";var s=n.pop();if(s.flag==this.F.O)throw"in `Lex.oper': Radix is not allowed to be an `"+s.code+"' operator.";e[r].code=s.code,e[r].inv=s.inv}else t&&(e[r].inv=!(t=!1));n.push(e[r])}return n},Lex.empty=function(e){for(var n=0;n<e.length;n++)if(!this.SPAC.test(e[n]))return!1;return!0},Seman.Q=function(e,n,t){this.fact=1,this.imag=new Object,this.sums=[],void 0!==e&&(this.fact*=e),void 0!==n&&(this.imag=n),void 0!==t&&(this.sums=t),this.calc=function(){return Seman.calcQ(this)},this.ident=function(){return Seman.identQ(this)},this.string=function(){return Seman.stringQ(this)},this.pow=function(e){return Seman.powQ(this,e)}},Seman.S=function(e,n,t){this.offset=0,this.queues=[],this.expont=null,void 0!==e&&(this.offset+=e),void 0!==n&&n.length>0&&(this.queues=n),void 0!==t&&(this.expont=t),this.calc=function(){return Seman.calc(this)},this.expand=function(){return Seman.expand(this),this},this.combine=function(){return Seman.combine(this)},this.expow=function(){return Seman.expow(this)},this.akinQ=function(){return Seman.akinS2Q(this)},this.ident=function(){return Seman.identS(this)},this.string=function(){return Seman.string(this)},this.simplify=function(e){return Seman.simplify(this,e)}},Seman.present=function(e){if("string"!=typeof e)throw"`Seman.present(string)' got `"+typeof e+"' instead of `string'";var n=Syntax.present(e);return this.represent(n)},Seman.represent=function(e){var n=new this.S;return e.forEach(function(e){var t=Seman.representQ(e);Seman.constQ(t)?n.offset+=t.fact:n.queues.push(t)}),this.solidify(n)},Seman.representQ=function(e){var n=new this.Q;return n.fact=e.fact.reduce(function(e,n){return e*n},1),n.imag=Imag.strParse(e.imag),e.exps.forEach(function(e){var t=Seman.represent(e.radix),r=Seman.represent(e.power),s=t.expont;if(t.expont=r,s){var i=new Seman.S;t.expont=s,i.expont=r,i.queues.push(new Seman.Q(1,new I,[t])),t=i}n.sums.push(t),console.log(t.string())}),e.sums.forEach(function(e){var t=Seman.represent(e);n.sums.push(t)}),n},Seman.constQ=function(e){return 0==Imag.len(e.imag)&&0==e.sums.length},Seman.solidify=function(e){var n=e.expont?e.expont.calc():NaN;return 0!=e.offset||1!=e.queues.length||1!=e.queues[0].fact||0!=e.queues[0].sums||isNaN(n)?e.queues.forEach(function(e){return e.sums.map(function(e){return Seman.solidify(e)})}):(Imag.pow(e.queues[0].imag,n),e.expont=null),0!=e.offset||1!=e.queues.length||e.expont||1!=e.queues[0].fact||0!=Imag.len(e.queues[0].imag)||1!=e.queues[0].sums.length?e:this.solidify(e.queues[0].sums[0])},Seman.solidifyQ=function(e){return 1!=e.fact||0!=Imag.len(e.imag)||1!=e.sums.length||0!=e.sums[0].offset||e.sums[0].expont||1!=e.sums[0].queues.length?e:this.solidifyQ(e.sums[0].queues[0])},Seman.calc=function(e){var n=e.offset+e.queues.reduce(function(e,n){return e+Seman.calcQ(n)},0);return e.expont?Math.pow(n,this.calc(e.expont)):n},Seman.calcQ=function(e){return Object.keys(e.imag).length>0?NaN:e.fact*e.sums.reduce(function(e,n){return e*Seman.calc(n)},1)},Seman.akinS2Q=function(e){return e.expont?0==e.offset&&1==e.queues.length?!0:0!=e.offset&&0==e.queues.length:!1},Seman.powQ=function(e,n){return new this.Q(Math.pow(e.fact,n),Object.keys(e.imag).reduce(function(t,r){return t[r]=e.imag[r]*n,t},new I))},Seman.identS=function(e){return 0==e.offset&&null==e.expont&&e.queues.length?!e.queues.some(this.calcQ):!1},Seman.identQ=function(e){return e.fact*e.sums.reduce(function(e,n){return e*n.calc()},1)==1&&Imag.empty(e.imag)},Seman.string=function(e){var n=e.expont?!0:!1;return e.queues.reduce(function(e,n){var t=n.string();return e+(n.fact<0?t:"+"+t)},(n?"(":"")+e.offset)+(n?")^("+e.expont.string()+")":"")},Seman.stringQ=function(e){return e.sums.reduce(function(e,n){return e+"("+n.string()+")"},""+e.fact+Imag.string(e.imag))},Seman.clone=function(e){var n=new Seman.S;return n.offset=e.offset,n.queues=e.queues.map(Seman.cloneQ),n.expont=e.expont?Seman.clone(e.expont):null,n},Seman.cloneQ=function(e){var n=new Seman.Q;return n.fact=e.fact,n.imag=Imag.clone(e.imag),n.sums=e.sums.map(Seman.clone),n},Seman.simplify=function(e,n){do e=e.expand(),e=e.combine(),e=e.expow();while(--n>0);return e},Seman.expand=function(e){for(var n=0;n<e.queues.length;){var t=Seman.extract(e.queues[n]);if(Imag.clear(e.queues[n].imag),e.queues[n].fact=1,e.queues[n].ident()){if(t.expont)throw"`expand': `s0.expont' must be `null'.";e.queues.splice(n,1),e.offset+=t.offset,e.queues=t.queues.concat(e.queues),n+=t.queues.length}else 1!=t.calc()&&e.queues[n].sums.push(t),n++}},Seman.extract=function(e){for(var n=new this.S(0,[new this.Q(e.fact,Imag.clone(e.imag))]),t=0;t<e.sums.length;)this.expand(e.sums[t]),null==e.sums[t].expont?(n=this.expansion(n,e.sums[t]),e.sums.splice(t,1)):t++;return n},Seman.expansion=function(e,n){if(null!=e.expont)throw"`expansion': `s0.expont != null'";if(null!=n.expont)throw"`expansion': `s1.expont != null'";var t=e.offset*n.offset,r=e.queues.map(function(e){return new Seman.Q(n.offset*e.fact,Imag.clone(e.imag),e.sums)}).concat(n.queues.map(function(n){return new Seman.Q(e.offset*n.fact,Imag.clone(n.imag),n.sums)}));return e.queues.forEach(function(e){n.queues.forEach(function(n){var t=new I;Imag.insert(t,e.imag),Imag.insert(t,n.imag),r.push(new Seman.Q(e.fact*n.fact,Imag.sort(t),e.sums.concat(n.sums)))})}),new this.S(t,r.filter(function(e){return 0!=e.fact}))},Seman.combine=function(e){var n=e.offset,t=[],r=void 0,s=e.expont;return s&&(s=this.combine(e.expont)),e.queues.filter(function(e){var t=Seman.calcQ(e);return isNaN(t)?!0:(n+=t,!1)}).map(function(e){return Seman.combineQ(e),e}).sort(function(e,n){return-Imag.sortFunc(e.imag,n.imag)}).forEach(function(e){void 0!=r&&Imag.equals(r.imag,e.imag)&&0==r.sums.length&&0==e.sums.length?t[0].fact+=e.fact:(t.unshift(e),r=e)}),t=t.filter(function(e){return 0!=e.fact}),Seman.solidify(new this.S(n,t,s))},Seman.combineQ=function(e){var n,t,r,s=[];n=e.sums.reduce(function(e,n,t){n=n.combine(n);var r=n.expont;n.expont=null;var s=Seman.string(n);return n.expont=r,e[s]?e[s].push(t):e[s]=[t],e},new Object),t=Object.keys(n);for(var i=0;i<t.length;i++)r=n[t[i]],r.length>1&&(s=s.concat(this.combineE(e.sums,r)));s.sort(function(e,n){return n-e}).forEach(function(n){e.sums.splice(n,1)})},Seman.combineE=function(e,n){if(n.length<2)throw"`combineE': "+n.length+"/2 indices";var t=[],r=new this.S,s=new this.S;for(s.offset=e[n[0]].offset,s.queues=e[n[0]].queues;n.length;){var i=e[n[0]].expont;i?i.expont?r.queues.push(new this.Q(1,new I,[i])):(r.offset+=i.offset,r.queues=r.queues.concat(i.queues)):r.offset++,t.push(n[0]),n.splice(0,1)}return s.expont=r,e.push(s),t},Seman.expow=function(e){e=Seman.powerfy(e);var n=e.expont?e.expont.calc():NaN;if(isNaN(n))e.expont&&e.expont.expont;else{for(var t=[];n>1;){var r=new Seman.S;r.offset=e.offset,r.queues=e.queues.map(Seman.cloneQ),t.push(r),n--}e.expont=1==n?null:new Seman.S(n),t.length&&(t.unshift(e),e=new Seman.S,e.queues.push(new Seman.Q(1,new I,t)))}return e.queues.forEach(function(e){e.sums=e.sums.map(Seman.expow)}),Seman.solidify(e)},Seman.powerfy=function(e){if(0==e.offset&&1==e.queues.length&&e.expont){for(var n=e.expont,t=e.queues[0],e=new this.S(0,[t]),r=0;r<t.sums.length;r++)t.sums[r].expont=Seman.expansion(t.sums[r].expont,Seman.clone(n));var s=n.calc();isNaN(s)?(t.sums.push(new this.S(t.fact,t.imag,Seman.clone(n))),t.fact=1,t.imag=new I):(t.fact=Math.pow(t.fact,s),Imag.pow(t.imag,s))}return e},Seman.concatS=function(e,n){return new this.S(e.offset+n.offset,e.queues.concat(n.queues))},Syntax.Q=function(){this.fact=[],this.imag="",this.exps=[],this.sums=[]},Syntax.E=function(){this.radix=[],this.power=[]},Syntax.present=function(e){if("string"!=typeof e)throw"`Syntax.present(string)' got `"+typeof e+"' instead of `string'";var n=Lex.iter(e),t=[];do{for(var r=!1;n.length>0&&n[0].flag==Lex.F.O;)n.shift().inv&&(r=!r);var s=this.pluckQ(n);s&&(r&&s.fact.unshift(-1),t.push(s))}while(n.length>0);return this.sort(t),t},Syntax.pluckQ=function(e){for(var n=new this.Q;e.length>0;)switch(e[0].flag){case Lex.F.N:var t=parseFloat(e[0].code);if(e.shift().inv){if(0==t)throw"`pluckQ' divided by 0.";t=1/t}n.fact.push(t);break;case Lex.F.X:var r=e[0].code;if(e.shift().inv){var s=new this.E;s.radix.push(this.X2Q(r)),s.power.push(this.N2Q(-1)),n.exps.push(s)}else n.imag+=r;break;case Lex.F.E:var s=new this.E;if(e[0].inv)throw"`pluckQ' Token `"+e[0]+"' is not allowed to be `inv'";s.radix=this.present(e.shift().code),s.power=this.pluckT(e),n.exps.push(s);break;case Lex.F.L:var i=this.present(e[0].code);if(e.shift().inv){var s=new this.E;s.radix=i,s.power.push(this.N2Q(-1)),n.exps.push(s)}else n.sums.push(i);break;case Lex.F.O:default:return this.emptyQ(n)?null:n}return this.emptyQ(n)?null:n},Syntax.pluckT=function(e){if(!(e.length>0))throw"`pluckT' without any token.";switch(e[0].flag){case Lex.F.N:return[this.N2Q(e.shift().code)];case Lex.F.X:return[this.X2Q(e.shift().code)];case Lex.F.E:var n=new this.E;if(e[0].inv)throw"`pluckT' Token `"+e[0]+"' is not allowed to be `inv'";return n.radix=this.present(e.shift().code),n.power=this.pluckT(e),[this.E2Q(n)];case Lex.F.L:return this.present(e.shift().code);case Lex.F.O:throw"`pluckT' invalid `flag=O'.";default:throw"`pluckT' invalid `flag=?'."}},Syntax.clean=function(e){e.forEach(Syntax.cleanQ)},Syntax.cleanQ=function(e){e.sums.forEach(Syntax.clean),e.exps.forEach(function(e){Syntax.clean(e.radix),Syntax.clean(e.power)});for(var n=0;n<e.exps.length;){var t=e.exps[n];1==t.radix.length&&1==t.power.length&&0==t.radix[0].fact.length&&t.radix[0].imag.length&&0==t.radix[0].exps.length&&0==t.radix[0].sums.length&&1==t.power.length&&1==t.power[0].fact.length&&!t.power[0].imag.length&&0==t.power[0].exps.length&&0==t.power[0].sums.length?e.exps.splice(n,1):n++}},Syntax.N2Q=function(e){var n=new this.Q;return n.fact.push(e),n},Syntax.X2Q=function(e){var n=new this.Q;return n.imag=e,n},Syntax.E2Q=function(e){var n=new this.Q;return n.exps.push(e),n},Syntax.sort=function(e){e.forEach(function(e){Syntax.sortQ(e)}),e.sort(function(e,n){return Imag.strSortFunc(e.imag,n.imag)})},Syntax.sortQ=function(e){e.sums.forEach(function(e){Syntax.sort(e)}),e.fact.sort(function(e,n){return e-n}),e.imag=Imag.strSort(e.imag),e.exps.sort(function(e,n){return Syntax.valueE(e)-Syntax.valueE(n)}),e.sums.sort(function(e,n){return Syntax.value(e)-Syntax.value(n)})},Syntax.value=function(e){return e.reduce(function(e,n){return e+Syntax.valueQ(n)},0)},Syntax.valueE=function(e){return Math.pow(16536421.3572347+this.value(e.radix),this.value(e.power))},Syntax.valueQ=function(e){return e.fact.reduce(function(e,n){return e*n},1)*Imag.strValue(e.imag)*e.exps.reduce(function(e,n){return e*Syntax.valueE(n)},1)*e.sums.reduce(function(e,n){return e*Syntax.value(n)},1)},Syntax.emptyQ=function(e){return 0==e.fact.length&&0==e.imag.length&&0==e.exps.length&&0==e.sums.length},Syntax.string=function(e){var n="";if(e.length){n+=this.stringQ(e[0]);for(var t=1;t<e.length;t++){var r=e[t].fact.reduce(function(e,n){return e*n},1),s=this.stringQ(e[t]);n+=0>r?s:"+"+s}}return n},Syntax.stringQ=function(e){var n="";if(e.fact.length){n+=e.fact[0];for(var t=1;t<e.fact.length;t++)n+="*"+e.fact[t]}return n+=e.imag,n+=e.exps.reduce(function(e,n){return e+Syntax.stringE(n)},""),n+=e.sums.reduce(function(e,n){return e+"("+Syntax.string(n)+")"},"")},Syntax.stringE=function(e){return"("+Syntax.string(e.radix)+")^("+Syntax.string(e.power)+")"};

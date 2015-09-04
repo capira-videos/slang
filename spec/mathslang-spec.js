@@ -152,5 +152,5 @@ describe('mathslang', function() {
                 {numerator : 3, denominator: 2})).toEqual(true);
         expect(ms.compare('<& @numerator/@denominator & #equals 1.5> #and <& @numerator + @denominator & #equals 5>', '3.5',
                 {numerator : 3, denominator: 2})).toEqual(true);
-    })
+    });
 });

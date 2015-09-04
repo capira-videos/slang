@@ -1,15 +1,28 @@
 'use strict';
-var Slang = Slang || {};
-Slang.logicslang = {
+window.Slang = window.Slang || {};
+window.Slang.logicslang = {
     // Handles logical operators #or, #and, and #not
-    compare: function(expectedValue, givenValue, compareFn) {
+    compare: function(expectedValue, givenValue, compareFn, variables) {
+    	if (variables) {
+    		expectedValue = this.replaceVariables(expectedValue, variables)
+    	}
         var lp = new LogicParser(compareFn);
         return lp.compare(expectedValue, givenValue);
+    },
+
+    // variables is an object of key -> value pairs
+    // replaces any @variable_name 
+    replaceVariables: function(expectedValue, variables) {
+    	for(var key in variables) {
+    		var regexp = new RegExp("@" + key, "g");
+    		expectedValue = expectedValue.replace(regexp, variables[key]);
+    	}
+    	return expectedValue;
     }
 };
 
 'use strict';
-var  LogicParser = function(compareFn) {
+var LogicParser = function(compareFn) {
 
     var tokens = [];
     var givenValue = '';
@@ -28,7 +41,7 @@ var  LogicParser = function(compareFn) {
 
     function getTokens(input) {
         var _tokens = [];
-        _tokens = input.split(/(#and|#or|#not|<|>)/);
+        _tokens = input.split(/(#and|#or|#not|<&|&|<|>)/);
         _tokens = _tokens.map(function(t) {
             return t.trim();
         });
@@ -62,13 +75,29 @@ var  LogicParser = function(compareFn) {
     // handle parens and pass values off for evaluation
     function terminal() {
         var token = tokens.shift();
-        if (token === '<') {
+        var value = '';
+        if (token == '<') {
+            value = expression();
             var rightParen = tokens.shift(); // remove the following right paren
-            if (rightParen !== '>') {
+            if (rightParen != '>') {
                 throw error;
             }
-            return expression();
-        } else if (token === '>') {
+            return value;
+        } else if (token == '<&') {
+            var saved = givenValue;
+            givenValue = tokens.shift();
+            var amp = tokens.shift();
+            if (amp != '&') {
+                throw error;
+            }
+            value = expression();
+            var rightParen = tokens.shift();
+            if (rightParen != '>') {
+                throw error;
+            }
+            givenValue = saved;
+            return value;
+        } else if (token == '>') {
             throw error;
         } else {
             return compareFn(token, givenValue);
