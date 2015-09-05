@@ -1,8 +1,8 @@
 'use strict';
 window.Slang = window.Slang || {};
 window.Slang.mathslang = {
-    compare: function(expectedValue, givenValue, variables) {
-        return Slang.logicslang.compare(expectedValue, givenValue, this._compare, variables);
+    compare: function(expectedValue, givenValue) {
+        return Slang.logicslang.compare(expectedValue, givenValue, this._compare);
     },
     _compare: function(expectedValue, givenValue) {
         //Inputs could be a Number so we convert them to String:

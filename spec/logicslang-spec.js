@@ -28,7 +28,4 @@ describe('logicslang', function() {
         expect(ls.compare('y #or <#not x>', 'y', _compareFn)).toEqual(true);
 
     });
-    it('can replace variables in a String', function() {
-        expect(ls.compare('@variable', 'x', _compareFn, {variable:'x'})).toEqual(true);
-    })
 });

@@ -228,23 +228,17 @@ Slang.langslang._damerauLevenshtein = function(a, b) {
 window.Slang = window.Slang || {};
 window.Slang.logicslang = {
     // Handles logical operators #or, #and, and #not
-    compare: function(expectedValue, givenValue, compareFn, variables) {
-    	if (variables) {
-    		expectedValue = this.replaceVariables(expectedValue, variables)
+    compare: function(expectedValue, givenValue, compareFn) {
+    	// Replace any @variableName with the variable in givenValue
+    	if (typeof givenValue == "object") {
+    		for(var key in givenValue) {
+	    		var regexp = new RegExp("@" + key, "g");
+	    		expectedValue = expectedValue.replace(regexp, givenValue[key]);
+    		}
     	}
         var lp = new LogicParser(compareFn);
         return lp.compare(expectedValue, givenValue);
     },
-
-    // variables is an object of key -> value pairs
-    // replaces any @variable_name 
-    replaceVariables: function(expectedValue, variables) {
-    	for(var key in variables) {
-    		var regexp = new RegExp("@" + key, "g");
-    		expectedValue = expectedValue.replace(regexp, variables[key]);
-    	}
-    	return expectedValue;
-    }
 };
 
 'use strict';
@@ -334,8 +328,8 @@ var LogicParser = function(compareFn) {
 'use strict';
 window.Slang = window.Slang || {};
 window.Slang.mathslang = {
-    compare: function(expectedValue, givenValue, variables) {
-        return Slang.logicslang.compare(expectedValue, givenValue, this._compare, variables);
+    compare: function(expectedValue, givenValue) {
+        return Slang.logicslang.compare(expectedValue, givenValue, this._compare);
     },
     _compare: function(expectedValue, givenValue) {
         //Inputs could be a Number so we convert them to String:

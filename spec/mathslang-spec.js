@@ -148,9 +148,9 @@ describe('mathslang', function() {
     });
 
     it('can handle variables', function() {
-        expect(ms.compare('<& @numerator/@denominator& #equals 1.5>', '',
+        expect(ms.compare('<& @numerator/@denominator& #equals 1.5>',
                 {numerator : 3, denominator: 2})).toEqual(true);
-        expect(ms.compare('<& @numerator/@denominator & #equals 1.5> #and <& @numerator + @denominator & #equals 5>', '3.5',
+        expect(ms.compare('<& @numerator/@denominator & #equals 1.5> #and <& @numerator + @denominator & #equals 5>',
                 {numerator : 3, denominator: 2})).toEqual(true);
     });
 });
