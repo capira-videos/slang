@@ -9,6 +9,8 @@ describe('langslang', function() {
 
     it('can compare expressions containing #typo', function() {
         expect(ls.compare('#typo berlin', 'Börlin')).toEqual(true);
+        expect(ls.compare('#typo Saarbrücken', 'Saarbriggen')).toEqual(false);
+        expect(ls.compare('#typo Saarbrücken', 'Saarbrüggen')).toEqual(true);
     });
     it('can compare expressions containing #nocase', function() {
         expect(ls.compare('#nocase Berlin', 'berlin')).toEqual(true);

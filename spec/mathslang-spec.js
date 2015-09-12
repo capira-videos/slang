@@ -94,10 +94,16 @@ describe('mathslang', function() {
         expect(ms.compare('#equals a*b*b', 'a*b^2')).toEqual(true);
     });
     it('can handle units using #equals', function() {
-        expect(ms.compare('#equals 1Kg', '1000 g')).toEqual(true);
-        expect(ms.compare('#equals 1 Kg', '1000g')).toEqual(true);
-        expect(ms.compare('#equals 1000 m', '1Km')).toEqual(true);
-        expect(ms.compare('#equals 1000m', '1 Km')).toEqual(true);
+        expect(ms.compare('#equals 1Kg', '1000 g', 'weight')).toEqual(true);
+        expect(ms.compare('#equals 1 Kg', '1000g', 'weight')).toEqual(true);
+        expect(ms.compare('#equals 1000 m', '1Km', 'distance')).toEqual(true);
+        expect(ms.compare('#equals 1000m', '1 Km', 'distance')).toEqual(true);
+        expect(ms.compare('#equals 1min', '60s', 'time')).toEqual(true);
+        expect(ms.compare('#equals t*5m/s+10m', '(t+2s)*5m/s', 'distance time')).toEqual(true);
+        expect(ms.compare('#equals 1h', '60m', 'time')).toEqual(true);
+        expect(ms.compare('#equals Km/h', '1000m/60s', 'time/distance')).toEqual(true);
+        expect(ms.compare('#approx 1 Km/h #epsilon 0.1', '999m/60s', 'time/distance')).toEqual(true);
+        expect(ms.compare('#approx 1 Km/s^2 #epsilon 0.1', '999m/s^2 ', 'distance/time')).toEqual(true);
     });
     it('can handle indexed variables using #equals', function() {
         expect(ms.compare('#equals x0+y0', 'y0+x0')).toEqual(true);
@@ -108,8 +114,9 @@ describe('mathslang', function() {
     });
     it('can handle special chars using #equals', function() {
         expect(ms.compare('#equals a^3', 'aa²')).toEqual(true);
-        expect(ms.compare('#equals b&sup3;', 'bbb')).toEqual(true);
+        expect(ms.compare('#equals b³', 'bbb')).toEqual(true);
         expect(ms.compare('#equals a²', 'a+a')).toEqual(false);
+        expect(ms.compare('#equals b&sup3;', 'bbb')).toEqual(true);
     });
     it('can handle square roots using #equals', function() {
         expect(ms.compare('#equals sqrt(x)', 'x^(1/2)')).toEqual(true);
@@ -148,9 +155,13 @@ describe('mathslang', function() {
     });
 
     it('can handle variables', function() {
-        expect(ms.compare('<& @numerator/@denominator& #equals 1.5>',
-                {numerator : 3, denominator: 2})).toEqual(true);
-        expect(ms.compare('<& @numerator/@denominator & #equals 1.5> #and <& @numerator + @denominator & #equals 5>',
-                {numerator : 3, denominator: 2})).toEqual(true);
+        expect(ms.compare('<& @numerator/@denominator& #equals 1.5>', {
+            numerator: 3,
+            denominator: 2
+        })).toEqual(true);
+        expect(ms.compare('<& @numerator/@denominator & #equals 1.5> #and <& @numerator + @denominator & #equals 5>', {
+            numerator: 3,
+            denominator: 2
+        })).toEqual(true);
     });
 });
