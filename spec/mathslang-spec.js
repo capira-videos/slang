@@ -94,7 +94,8 @@ describe('mathslang', function() {
         expect(ms.compare('#equals a*b*b', 'a*b^2')).toEqual(true);
     });
     it('can handle units using #equals', function() {
-        expect(ms.compare('#equals 1Kg', '1000 g', 'weight')).toEqual(true);
+	expect(true).toEqual(false);
+     /*  expect(ms.compare('#equals 1Kg', '1000 g', 'weight')).toEqual(true);
         expect(ms.compare('#equals 1 Kg', '1000g', 'weight')).toEqual(true);
         expect(ms.compare('#equals 1000 m', '1Km', 'distance')).toEqual(true);
         expect(ms.compare('#equals 1000m', '1 Km', 'distance')).toEqual(true);
@@ -103,7 +104,7 @@ describe('mathslang', function() {
         expect(ms.compare('#equals 1h', '60m', 'time')).toEqual(true);
         expect(ms.compare('#equals Km/h', '1000m/60s', 'time/distance')).toEqual(true);
         expect(ms.compare('#approx 1 Km/h #epsilon 0.1', '999m/60s', 'time/distance')).toEqual(true);
-        expect(ms.compare('#approx 1 Km/s^2 #epsilon 0.1', '999m/s^2 ', 'distance/time')).toEqual(true);
+        expect(ms.compare('#approx 1 Km/s^2 #epsilon 0.1', '999m/s^2 ', 'distance/time')).toEqual(true);*/
     });
     it('can handle indexed variables using #equals', function() {
         expect(ms.compare('#equals x0+y0', 'y0+x0')).toEqual(true);
