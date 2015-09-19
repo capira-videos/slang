@@ -4,7 +4,8 @@
 	important to include it's helper-class `Lex'
 **/
 window.Slang = window.Slang || { };
-window.Slang._mathslang_syntax = ( function() {
+window.Slang._mathslang = window.Slang._mathslang || { };
+window.Slang._mathslang.syntax = ( function() {
 	/**STRUCT**/
 	// struct Syntax.Q represents a product
 	function Q(/*f, i, e, s*/) {
@@ -25,14 +26,20 @@ window.Slang._mathslang_syntax = ( function() {
 		if(p !=== undefined) this.power = p;*/
 	};
 	/**OPERATOR**/
+var present_count = 0; // only for printing mechanics
+var present_space = '';
 	// string -> Q[]
 	function present(s) {
+		// console.log("present "+s);
 		if(typeof s != "string") throw "`Syntax.present(string)' got `"+typeof s+"' instead of `string'";
-		var t = Slang._mathslang_lex.iter(s);
+		
+		present_count += 1;
+		
+		var t = Slang._mathslang.lexical.iter(s);
 		var sum = [];
 		do {
 			var minus = false;
-			while(t.length > 0 && t[0].flag == Slang._mathslang_lex.F.O)
+			while(t.length > 0 && t[0].flag == Slang._mathslang.lexical.FLAG.O)
 				if(t.shift().inv) minus = !minus;
 			var q = pluckQ(t);
 			if(q) {
@@ -41,67 +48,98 @@ window.Slang._mathslang_syntax = ( function() {
 			}
 		} while(t.length > 0);
 		sort(sum);
+		
+		present_space = '';
+		for(var i=0;i<present_count;++i)
+			present_space += '\t';
+		;
+		// console.log(present_space+stringQS(sum));
+		present_count -= 1;
+		
 		return sum;
 	};
 	// T[] -> Q
 	function pluckQ(t) {
 		var q = new Q();
 		while(t.length > 0) switch(t[0].flag) {
-			case Slang._mathslang_lex.F.N: { // case `number'
+			case Slang._mathslang.lexical.FLAG.N: { // case `number'
 				var x = parseFloat(t[0].code);
 				if(t.shift().inv) { // sub-case `x^-1'
 					if(x == 0) throw "`pluckQ' divided by 0.";
 					x = 1 / x;
-				} q.fact.push(x); break;
-			} case Slang._mathslang_lex.F.X: { // case `identifier'
-				var k = t[0].code
-				if(t.shift().inv) {
+				}
+				q.fact.push(x);
+				break;
+			} case Slang._mathslang.lexical.FLAG.X: { // case `identifier'
+				var k = t[0].code; // imaginary
+				if(t.shift().inv) { // sub-case `x^-1'
 					var e = new E;
 					e.radix.push(X2Q(k));
 					e.power.push(N2Q(-1));
 					q.exps.push(e);
 				} else
-					q.imag += k;
+					q.imag += k
+				;
 				break;
-			} case Slang._mathslang_lex.F.E: { // case `expont'
-				var e = new E();
+			} case Slang._mathslang.lexical.FLAG.E: { // case `expont'
+				var e = new E;
 				if(t[0].inv) throw "`pluckQ' Token `"+t[0]+"' is not allowed to be `inv'";
 				e.radix = present(t.shift().code);
 				e.power = pluckT(t);
 				q.exps.push(e);
 				break;
-			} case Slang._mathslang_lex.F.L:
+			} case Slang._mathslang.lexical.FLAG.L: // case `need-to-become-lexed'
 				var qs = present(t[0].code);
-				if(t.shift().inv) {
+				if(t.shift().inv) { // sub-case `x^-1'
 					var e = new E;
 					e.radix = qs;
 					e.power.push(N2Q(-1));
 					q.exps.push(e);
-				} else q.sums.push(qs);
+				} else
+					q.sums.push(qs)
+				;
 				break;
-			case Slang._mathslang_lex.F.O:
+			case Slang._mathslang.lexical.FLAG.O:
 			default:
 				return emptyQ(q) ? null : q;
 		}
 		return emptyQ(q) ? null : q;
 	};
-	// T[] -> Q[]
+	// Token[] -> Q[]
 	function pluckT(t) {
 		if(t.length > 0) switch(t[0].flag) {
-			case Slang._mathslang_lex.F.N: return [N2Q(t.shift().code)];
-			case Slang._mathslang_lex.F.X: return [X2Q(t.shift().code)];
-			case Slang._mathslang_lex.F.E:
-			{
-				var e = new E();
-				if(t[0].inv) throw "`pluckT' Token `"+t[0]+"' is not allowed to be `inv'";
+			case Slang._mathslang.lexical.FLAG.N:
+				return [ N2Q(t.shift().code) ]
+			;
+			case Slang._mathslang.lexical.FLAG.X:
+				return [ X2Q(t.shift( ).code) ];
+			;
+			case Slang._mathslang.lexical.FLAG.E:
+				var e = new E;
+				if(t[0].inv)
+					throw "`pluckT(" + t[0].code + "..)' illegal `inv'"
+				;
 				e.radix = present(t.shift().code);
-				e.power = pluckT(t);
-				return [E2Q(e)];
-			}
-			case Slang._mathslang_lex.F.L: return present(t.shift().code);
-			case Slang._mathslang_lex.F.O:	throw "`pluckT' invalid `flag=O'.";
-			default:		throw "`pluckT' invalid `flag=?'.";
-		} else throw "`pluckT' without any token.";
+				e.power = pluckT(t, true);
+				return [E2Q(e)]
+			;
+			case Slang._mathslang.lexical.FLAG.L:
+				return present(t.shift( ).code);
+			;
+			case Slang._mathslang.lexical.FLAG.O:
+				t.shift( );
+				var result = pluckT(t);
+				result.forEach(function(q) {
+					q.fact.push(-1);
+				});			
+				return result
+			;
+			default:
+				throw "`pluckT' invalid `flag=?'."
+			;
+		} else
+			throw "`pluckT' without any token."
+		;
 	};
 	// Q[] | Q -> void
 	// not up to date anymore
@@ -132,24 +170,20 @@ window.Slang._mathslang_syntax = ( function() {
 			&& 0 == e.power[0].exps.length
 			&& 0 == e.power[0].sums.length) {
 				// evaluate exponential interleaving cleanup
-				/*Slang._mathslang_imag.pow(e.radix[0].imag, e.power[0].fact[0]);
-				Slang._mathslang_imag.insert(q.imag, e.radix[0].imag);*/
+				/*Slang._mathslang.imaginary.pow(e.radix[0].imag, e.power[0].fact[0]);
+				Slang._mathslang.imaginary.insert(q.imag, e.radix[0].imag);*/
 				q.exps.splice(i, 1);
 			} else i++;
 		}
 	}
 	// number -> Q
 	function N2Q(e) {
-		var q = new Q();
-		if( typeof e != 'number' ) {
-			//console.log("not a number");
-			//return q;
-		}
+		var q = new Q;
 		q.fact.push(e);
 		return q;
 	};
 	function X2Q(e) {
-		var q = new Q();
+		var q = new Q;
 		if( typeof e != 'string' ) {
 			console.log("not a string");
 			return q;
@@ -158,7 +192,7 @@ window.Slang._mathslang_syntax = ( function() {
 		return q;
 	};
 	function E2Q(e) {
-		var q = new Q();
+		var q = new Q;
 		if( typeof e != 'E' ) {
 			console.log("not a E");
 			return q;
@@ -168,13 +202,17 @@ window.Slang._mathslang_syntax = ( function() {
 	};
 	// Q[] | Q -> void
 	function sort(qs) {
-		qs.forEach(function(q){ sortQ(q); });
-		qs.sort(function(a,b){ return Slang._mathslang_imag.strSortFunc(a.imag, b.imag); });
+		qs.forEach(function(q){
+			sortQ(q);
+		});
+		qs.sort(function(a,b){
+			return Slang._mathslang.imaginary.strSortFunc(a.imag, b.imag);
+		});
 	};
 	function sortQ(q) {
 		q.sums.forEach(function(qs){ sort(qs); });
 		q.fact.sort(function(a, b){ return a - b; });
-		q.imag = Slang._mathslang_imag.strSort(q.imag);
+		q.imag = Slang._mathslang.imaginary.strSort(q.imag);
 		q.exps.sort(function(a, b){ return valueE(a) - valueE(b); });
 		q.sums.sort(function(a, b){ return value0(a) - value0(b); });
 	};
@@ -183,7 +221,7 @@ window.Slang._mathslang_syntax = ( function() {
 	function valueE(e) { return Math.pow(16536421.3572347 + value0(e.radix), value0(e.power)); };
 	function valueQ(q) {
 		return	q.fact.reduce(function(a, b){return a * b;}, 1) *
-				Slang._mathslang_imag.strValue(q.imag) *
+				Slang._mathslang.imaginary.strValue(q.imag) *
 				q.exps.reduce(function(a,b){return a*valueE(b);},1) *
 				q.sums.reduce(function(a,b){return a*value0(b);},1);
 	};

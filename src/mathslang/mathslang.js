@@ -1,10 +1,10 @@
 'use strict';
 window.Slang = window.Slang || { };
 window.Slang.mathslang = { };
-window.Slang.mathslang.compare = function(expectedValue, givenValue) {
-	return Slang.logicslang.compare(expectedValue, givenValue, this._compare);
+window.Slang.mathslang.compare = function(expectedValue, givenValue, _units) {
+	return Slang.logicslang.compare(expectedValue, givenValue, this._compare, _units);
 };
-window.Slang.mathslang._compare = function(expectedValue, givenValue) {
+window.Slang.mathslang._compare = function(expectedValue, givenValue, _units) {
 	//Inputs could be a Number so we convert them to String:
 	givenValue = givenValue + '';
 	expectedValue = expectedValue + '';
@@ -16,14 +16,14 @@ window.Slang.mathslang._compare = function(expectedValue, givenValue) {
 		expectedValue = expectedValue.substr(expectedValue.indexOf(' ') + 1);
 		switch (prefix) {
 			case 'equals':
-				return Slang._mathslang.match(expectedValue, givenValue);
+				return Slang._mathslang.impl.match(expectedValue, givenValue, _units);
 
 			case 'identic':
-				return Slang._mathslang.matchSyntax(expectedValue, givenValue);
+				return Slang._mathslang.impl.matchSyntax(expectedValue, givenValue); // _units
 
 			case 'approx':
 				var values = expectedValue.split('#epsilon');
-				return Slang._mathslang.matchApprox(values[0], givenValue, values[1]);
+				return Slang._mathslang.impl.matchApprox(values[0], givenValue, values[1], _units);
 
 			case 'lt':
 				return Number.parseFloat(givenValue) < Number.parseFloat(expectedValue);
