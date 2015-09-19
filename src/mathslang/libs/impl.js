@@ -131,19 +131,38 @@ window.Slang._mathslang.impl = ( function() {
 		} catch(e) { return false; }
 	}
 	function extractUnit(a, _units) {
-// console.log('extractUnit(a='+a+')');
+	console.log('================================');
+console.log('extractUnit(a='+a+')');
 		if( _units )
 			a = Slang._mathslang.lexical.replace_units(a, _units)
 		;
-// console.log('replace_units -> '+a);
+console.log('replace_units -> '+a);
 		a = Slang._mathslang.semantix.present(a);
- // console.log('semantix.present -> '+a.string( ));
+  console.log('semantix.present -> '+a.string( ));
 		a = a.simplify(3);
- // console.log('semantix.simplify -> '+a.string( ));
+  console.log('semantix.simplify -> '+a.string( ));
 		Slang._mathslang.semantix.free_const(a);
- // console.log('semantix.free_const -> '+a.string( ));
-console.log('semantix.string_imag -> '+Slang._mathslang.semantix.string_imag(a));
-		return Slang._mathslang.semantix.string_imag(a);
+  console.log('semantix.free_const -> '+a.string( ));
+		a = Slang._mathslang.semantix.string_imag(a);
+console.log('semantix.string_imag -> '+a);
+		function assign(s, i, c) {
+			return s.substr( 0, i ) + c + s.substr( i + c.length );
+		}
+		for( var i=0; i < a.length; ++i )
+		if( i>0 && a[i-1]=='^' && a[i]=='-' ) {
+			var j=0;
+			while( a[i-2-j]==' ' ) ++ j;
+			if( a[i-2-j]==')' ) {
+				console.log('PARARARARARARARARARAARAR!!');
+			} else {
+				a = assign(a, i-0, '^');
+				a = assign(a, i-1, a[i-2]);
+				a = assign(a, i-2, '/');
+			}
+		}
+		a = a.replace(/1/g, '');
+console.log('extractUnit -> '+a);
+		return a;
 	}
 	/*
 	function matchDebug(a){

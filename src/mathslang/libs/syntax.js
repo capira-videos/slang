@@ -83,9 +83,18 @@ var present_space = '';
 				break;
 			} case Slang._mathslang.lexical.FLAG.E: { // case `expont'
 				var e = new E;
-				if(t[0].inv) throw "`pluckQ' Token `"+t[0]+"' is not allowed to be `inv'";
+				var switchPowerFact = false;
+				if(t[0].inv) {
+				//	throw "`pluckQ' Token `"+t[0].code+"' is not allowed to be `inv'";
+					switchPowerFact = true;
+				}
 				e.radix = present(t.shift().code);
 				e.power = pluckT(t);
+			/*	if( switchPowerFact )
+					//e.power.forEach(function(q){q.fact*=-1;console.log('-> '+q.fact);})
+					e.power.forEach(function(q){q.fact.push(-1);});
+					console.log(stringE(e));
+				;*/
 				q.exps.push(e);
 				break;
 			} case Slang._mathslang.lexical.FLAG.L: // case `need-to-become-lexed'

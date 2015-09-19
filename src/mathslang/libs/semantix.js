@@ -69,8 +69,8 @@ window.Slang._mathslang.semantix = ( function() {
 	// Slang._mathslang.syntax.Q -> Q
 	function representQ(q) {
 //console.log(represent_space+'representQ(q='+Slang._mathslang.syntax.stringQ(q)+')');
-		var rq = new Q();
-		rq.fact = q.fact.reduce(function(a,b){return a*b;}, 1);
+		var rq = new Q;
+		rq.fact = q.fact ? q.fact.reduce(function(a,b){return a*b;}, 1) : 1;
 		rq.imag = Slang._mathslang.imaginary.strParse(q.imag);
 		q.exps.forEach(function(e) {
 //console.log(represent_space+'represent(e.radix='+Slang._mathslang.syntax.stringQ(e.radix)+')');
@@ -528,13 +528,13 @@ window.Slang._mathslang.semantix = ( function() {
 			var q = s0.queues[i];
 			result = Object.keys(q.imag).reduce(function(a, k){
 				var times = q.imag[k];
-				return a + k + ( times == 1 ? '' : '^' + times );
+				return a + ( times==+1 ? k : times==-1 ? '1/'+k : k+'^'+times );
 			}, result);
 			q.sums.forEach(function(s){
 				result += '(' + string_imag(s) + ')';
 			});
 			if( i + 1 < s0.queues.length)
-				result += '+'
+				result += ' + '
 			;
 		};
 		if( s0.expont )

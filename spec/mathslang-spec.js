@@ -160,11 +160,11 @@ describe('mathslang', function() {
         expect(ms.compare('#equals a²', 'a+a')).toEqual(false);
     });
     it('can handle square roots using #equals', function() {
-        expect(ms.compare('#equals sqrt(x)', 'x^(1/2)')).toEqual(true);
-        expect(ms.compare('#equals sqrt(4)', '2')).toEqual(true);
-        expect(ms.compare('#equals Sqrt(4)', '2')).toEqual(true);
-        expect(ms.compare('#equals wurzel(9)', '3')).toEqual(true);
-        expect(ms.compare('#equals Wurzel(16)', '4')).toEqual(true);
+		expect(ms.compare('#equals sqrt(x)', 'x^(1/2)')).toEqual(true);
+		expect(ms.compare('#equals sqrt(4)', '2')).toEqual(true);
+		expect(ms.compare('#equals Sqrt(4)', '2')).toEqual(true);
+		expect(ms.compare('#equals wurzel(9)', '3')).toEqual(true);
+		expect(ms.compare('#equals Wurzel(16)', '4')).toEqual(true);
     });
     it('can handle linear functions using #equals', function() {
         expect(ms.compare('#equals 2x+1', '1+x+x')).toEqual(true);
@@ -195,10 +195,18 @@ describe('mathslang', function() {
 
     });
 	
+	it('is syntactical sugar, binding exponent to denominator', function() {
+		expect( f('m^.5/s^2', 'distance') == 'm/s^2' ).toEqual(true);
+	});
+	
 	it("can compute a term's unit", function(){
 		var f = Slang._mathslang.impl.extractUnit;
-		expect( f('1/s+m^25m+7m^2','distance time') == 'm^2+m^26+s^-1' ).toEqual(true);
-		expect( f('1/2*m/s+7','distance time') == 'ms^-1' ).toEqual(true);
+		expect( f('1/s+m^25m+7m^2','distance time') == 'm^2 + m^26 + /s' ).toEqual(true);
+		expect( f('1/2*m/s+7','distance time') == 'm/s' ).toEqual(true);
+		expect( f('1/(1+1)m', 'distance') == '/m' ).toEqual(true);
+		expect( f('1/(1+1)m^-7', 'distance') == '/m^7' ).toEqual(true);
+		expect( f('(m^.5/s)^2', 'distance') == 'm/s^2' ).toEqual(true);
+		expect( f('(/m)^-1*s^-2') == 'm/s^2' ).toEqual(true);
 	});
 
     it('can handle variables', function() {

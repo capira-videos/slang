@@ -23,6 +23,52 @@ window.Slang._mathslang.lexical = ( function() {
 	};
 	// String -> Lex.T[]
 	function iter(x) {
+// begin crap-style
+		{	var fun = {
+			// every key is including a argument maker `°'
+				'Sqrt(°)'	: '(°^.5',
+				'sqrt(°)'	: '(°^.5',
+				'root(°)'	: '(°^.5',
+				'wurzel(°)'	: '(°^.5',
+				'Wurzel(°)'	: '(°^.5',
+				'R007(°)'	: '(°^.5'
+			}
+			function assign(s, i, c) {
+				return s.substr( 0, i ) + c + s.substr( i + c.length );
+			}
+			var key_array = Object.keys( fun );
+			// detect 1st key
+			for( var offset=0; offset < x.length; ++offset ) {
+				for( var key_i=0; key_i < key_array.length; ++key_i ) {
+					var i=0;
+					while( key_array[key_i][i] == x[offset+i] ) {
+						++ i;
+						if( key_array[key_i][i] == '°' ) {
+// console.log("in `"+x+"' fun `"+key_array[key_i]+"' spotted {");
+							var argument = '';
+						// save argument
+							var j = 0;
+							var c = '';
+							while( (c=x[ offset+i+j ]) != key_array[key_i][i+1] ) {
+								argument += c;
+								++ j;
+							}
+// console.log("\targument: "+argument);
+						// replace key into value
+							x =	x.substr(0, offset)		+
+								fun[ key_array[key_i] ]	+
+								x.substr(offset+i+j, x.length)
+							;
+// console.log("\treplaced function: "+x);
+						// insert argument at 1st maker
+							x = x.replace('°', argument);
+// console.log("\tinserted argument: "+x+'\n}');
+						}
+					}
+				}
+			}
+		}
+// end crap-style
 		var r = [];
 		var q = _prep(x).split('');
 		while(q.length > 0)
