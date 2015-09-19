@@ -26,67 +26,63 @@ window.Slang._mathslang.syntax = ( function() {
 		if(p !=== undefined) this.power = p;*/
 	};
 	/**OPERATOR**/
-var present_count = 0; // only for printing mechanics
-var present_space = '';
+	function _lex( ){ return Slang._mathslang.lexical; }
 	// string -> Q[]
 	function present(s) {
 		// console.log("present "+s);
-		if(typeof s != "string") throw "`Syntax.present(string)' got `"+typeof s+"' instead of `string'";
-		
-		present_count += 1;
-		
-		var t = Slang._mathslang.lexical.iter(s);
+		if(typeof s != "string")
+			throw "syntax.present(typeof s = "+typeof s+")"
+		;
+		var t = _lex( ).iter(s);
 		var sum = [];
 		do {
 			var minus = false;
-			while(t.length > 0 && t[0].flag == Slang._mathslang.lexical.FLAG.O)
-				if(t.shift().inv) minus = !minus;
+			while( t.length > 0 && t[0].flag == _lex( ).FLAG.O )
+			   if( t.shift().inv )
+					minus = ! minus
+			;
 			var q = pluckQ(t);
-			if(q) {
-				if(minus) q.fact.unshift(-1);
+			if( q ) {
+				if(minus)
+					q.fact.unshift(-1)
+				;
 				sum.push(q);
 			}
-		} while(t.length > 0);
-		sort(sum);
-		
-		present_space = '';
-		for(var i=0;i<present_count;++i)
-			present_space += '\t';
-		;
-		// console.log(present_space+stringQS(sum));
-		present_count -= 1;
-		
+		} while( t.length > 0 );
+		sort( sum );		
 		return sum;
 	};
-	// T[] -> Q
+	// _lex( ).Token[ ] -> Q
 	function pluckQ(t) {
-		var q = new Q();
-		while(t.length > 0) switch(t[0].flag) {
-			case Slang._mathslang.lexical.FLAG.N: { // case `number'
+		var q = new Q;
+		while( t.length > 0 )switch( t[0].flag ) {
+			case _lex( ).FLAG.N: { // case `number'
 				var x = parseFloat(t[0].code);
-				if(t.shift().inv) { // sub-case `x^-1'
-					if(x == 0) throw "`pluckQ' divided by 0.";
+				if( t.shift().inv ) { // sub-case `x^-1'
+					if( x == 0 )
+						throw "`pluckQ' divided by 0."
+					;
 					x = 1 / x;
 				}
 				q.fact.push(x);
 				break;
-			} case Slang._mathslang.lexical.FLAG.X: { // case `identifier'
+			} case _lex( ).FLAG.X: { // case `identifier'
 				var k = t[0].code; // imaginary
 				if(t.shift().inv) { // sub-case `x^-1'
 					var e = new E;
-					e.radix.push(X2Q(k));
-					e.power.push(N2Q(-1));
+					e.radix.push( X2Q(k) );
+					e.power.push( N2Q(-1) );
 					q.exps.push(e);
 				} else
 					q.imag += k
 				;
 				break;
-			} case Slang._mathslang.lexical.FLAG.E: { // case `expont'
+			} case _lex( ).FLAG.E: { // case `expont'
 				var e = new E;
-				var switchPowerFact = false;
+				// var switchPowerFact = false;
 				if(t[0].inv) {
-				//	throw "`pluckQ' Token `"+t[0].code+"' is not allowed to be `inv'";
-					switchPowerFact = true;
+					//throw "`pluckQ' Token `"+t[0].code+"' is not allowed to be `inv'";
+					// switchPowerFact = true;
 				}
 				e.radix = present(t.shift().code);
 				e.power = pluckT(t);
@@ -97,7 +93,7 @@ var present_space = '';
 				;*/
 				q.exps.push(e);
 				break;
-			} case Slang._mathslang.lexical.FLAG.L: // case `need-to-become-lexed'
+			} case _lex( ).FLAG.L: // case `need-to-become-lexed'
 				var qs = present(t[0].code);
 				if(t.shift().inv) { // sub-case `x^-1'
 					var e = new E;
@@ -108,7 +104,7 @@ var present_space = '';
 					q.sums.push(qs)
 				;
 				break;
-			case Slang._mathslang.lexical.FLAG.O:
+			case _lex( ).FLAG.O:
 			default:
 				return emptyQ(q) ? null : q;
 		}
@@ -117,13 +113,13 @@ var present_space = '';
 	// Token[] -> Q[]
 	function pluckT(t) {
 		if(t.length > 0) switch(t[0].flag) {
-			case Slang._mathslang.lexical.FLAG.N:
+			case _lex( ).FLAG.N:
 				return [ N2Q(t.shift().code) ]
 			;
-			case Slang._mathslang.lexical.FLAG.X:
+			case _lex( ).FLAG.X:
 				return [ X2Q(t.shift( ).code) ];
 			;
-			case Slang._mathslang.lexical.FLAG.E:
+			case _lex( ).FLAG.E:
 				var e = new E;
 				if(t[0].inv)
 					throw "`pluckT(" + t[0].code + "..)' illegal `inv'"
@@ -132,10 +128,10 @@ var present_space = '';
 				e.power = pluckT(t, true);
 				return [E2Q(e)]
 			;
-			case Slang._mathslang.lexical.FLAG.L:
+			case _lex( ).FLAG.L:
 				return present(t.shift( ).code);
 			;
-			case Slang._mathslang.lexical.FLAG.O:
+			case _lex( ).FLAG.O:
 				t.shift( );
 				var result = pluckT(t);
 				result.forEach(function(q) {

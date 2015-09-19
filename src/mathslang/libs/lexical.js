@@ -5,7 +5,7 @@
 **/
 window.Slang = window.Slang || { };
 window.Slang._mathslang = window.Slang._mathslang || { };
-window.Slang._mathslang.lexical = ( function() {
+window.Slang._mathslang.lexical = ( function( ) {
 	// flags of token
 	var FLAG = {
 		O : 0,	// OPERATOR - IN THE END ONLY +/-
@@ -23,52 +23,9 @@ window.Slang._mathslang.lexical = ( function() {
 	};
 	// String -> Lex.T[]
 	function iter(x) {
-// begin crap-style
-		{	var fun = {
-			// every key is including a argument maker `°'
-				'Sqrt(°)'	: '(°^.5',
-				'sqrt(°)'	: '(°^.5',
-				'root(°)'	: '(°^.5',
-				'wurzel(°)'	: '(°^.5',
-				'Wurzel(°)'	: '(°^.5',
-				'R007(°)'	: '(°^.5'
-			}
-			function assign(s, i, c) {
-				return s.substr( 0, i ) + c + s.substr( i + c.length );
-			}
-			var key_array = Object.keys( fun );
-			// detect 1st key
-			for( var offset=0; offset < x.length; ++offset ) {
-				for( var key_i=0; key_i < key_array.length; ++key_i ) {
-					var i=0;
-					while( key_array[key_i][i] == x[offset+i] ) {
-						++ i;
-						if( key_array[key_i][i] == '°' ) {
-// console.log("in `"+x+"' fun `"+key_array[key_i]+"' spotted {");
-							var argument = '';
-						// save argument
-							var j = 0;
-							var c = '';
-							while( (c=x[ offset+i+j ]) != key_array[key_i][i+1] ) {
-								argument += c;
-								++ j;
-							}
-// console.log("\targument: "+argument);
-						// replace key into value
-							x =	x.substr(0, offset)		+
-								fun[ key_array[key_i] ]	+
-								x.substr(offset+i+j, x.length)
-							;
-// console.log("\treplaced function: "+x);
-						// insert argument at 1st maker
-							x = x.replace('°', argument);
-// console.log("\tinserted argument: "+x+'\n}');
-						}
-					}
-				}
-			}
-		}
-// end crap-style
+		// `sqrt(*)' -> (*)^-0.5`
+		x = _replaceFun(x);
+		// ~~~~~>
 		var r = [];
 		var q = _prep(x).split('');
 		while(q.length > 0)
@@ -199,25 +156,25 @@ window.Slang._mathslang.lexical = ( function() {
 				s = assign( s, i-offset+2, '(' );
 			}
 		}
-		// replace unsigned  maker `°' into space
+		// replace unsigned maker `°' into space
 		return s.replace(/\°/g, '');
 	}
 // private
-	// grammar
+// grammar
 	function Gram(plu, exp) {
 		this.exp = exp;
 		this.plu = plu;
 		this.test = function(c){ return this.exp.test(c); }
 	};
-	// space gramar
+// space gramar
 	var _SPACE = new Gram(true, /^\s$/);
-	// bracket grammar
+// bracket grammar
 	var _BRACKET =
 	[
 		new Gram(false, /^\(|\[|\{$/),
 		new Gram(false, /^\)|\]|\}$/),
 	];
-	// token grammar
+// token grammar
 	var _GRAMMAR =
 	[
 		new Gram(false, /^\+|\-|\*|\/$/),
@@ -226,7 +183,7 @@ window.Slang._mathslang.lexical = ( function() {
 		new Gram(true, /^[0-9]|\,|\.$/),
 
 	];
-	// String -> String
+// String -> String
 	function _prep(x) {
 		x = x.replace(/²/g, "^2");
 		x = x.replace(/³/g, "^3");
@@ -235,14 +192,14 @@ window.Slang._mathslang.lexical = ( function() {
 		x = x.replace(/,/g, ".");
 		return x;
 	};
-	// Lex.T[] -> Lex.T[]
+// lex.Token[] -> lex.Token[]
 	function _oper(x) {
 		var r = [];
 		var inv = false;
 		for(var i in x) {
-			if(x[i].flag == FLAG.O) switch(x[i].code) {
+			if( x[i].flag == FLAG.O )switch( x[i].code ) {
 				case "-":
-					x[i].inv = !x[i].inv;
+					x[i].inv = ! x[i].inv;
 				case "+":
 					break;
 				case "/":
@@ -250,22 +207,63 @@ window.Slang._mathslang.lexical = ( function() {
 				case "*":
 					continue;
 				default:
-					throw "in `Lex.oper': Operator `" + x[i].code + "' has not been implemented.";
-			} else if(x[i].flag == FLAG.E) {
+					throw "operator `" + x[i].code + "' has not been implemented.";
+			} else if( x[i].flag == FLAG.E ) {
 				if(r.length == 0)
-					throw "in `Lex.oper': Radix ahead `" + x[i].code + "' is undefined.";
+					throw "radix ahead `" + x[i].code + "' is undefined.";
 				var t = r.pop();
 				if(t.flag == FLAG.O)
-					throw "in `Lex.oper': Radix is not allowed to be an `" + t.code + "' operator.";
+					throw "radix is not allowed to be an `" + t.code + "' operator.";
 				x[i].code	= t.code;
 				x[i].inv	= t.inv;
-			} else if(inv) {
-				x[i].inv = !(inv=false);
+			} else if( inv ) {
+				x[i].inv = ! ( inv = false );
 			}
-			r.push(x[i]);
+			r.push( x[i] );
 		}
 		return r;
 	};
+	function _replaceFun(x) {
+		var fun = {
+		// every key is including a argument maker `°'
+			'Sqrt(°)'	: '°^.5',
+			'sqrt(°)'	: '°^.5',
+			'root(°)'	: '°^.5',
+			'wurzel(°)'	: '°^.5',
+			'Wurzel(°)'	: '°^.5',
+			'R007(°)'	: '°^.5'
+		}
+		function assign(s, i, c) {
+			return s.substr( 0, i ) + c + s.substr( i + c.length );
+		}
+		var key_array = Object.keys( fun );
+		// detect 1st key
+		for( var offset=0; offset < x.length; ++offset ) {
+			for( var key_i=0; key_i < key_array.length; ++key_i ) {
+				var i=0;
+				while( key_array[key_i][i] == x[offset+i] ) {
+					++ i;
+					if( key_array[key_i][i] == '°' ) {
+						var argument = '';
+					// save argument
+						var j = 0;
+						var c = '';
+						while( (c=x[ offset+i+j ]) != key_array[key_i][i+1] ) {
+							argument += c;
+							++ j;
+						}
+					// replace key into value
+						x =	x.substr(0, offset)		+ '(' +
+							fun[ key_array[key_i] ]	+
+							x.substr(offset+i+j, x.length)
+						;
+					// insert argument at 1st maker
+						x = x.replace( '°', '(' + argument + ')' );
+					}
+				}
+			}
+		} return x;
+	}
 	return {
 		FLAG : FLAG,
 		T : Token,

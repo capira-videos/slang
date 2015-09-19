@@ -20,13 +20,13 @@ describe('mathslang', function() {
 
     it('has not known bugs using #equals', function() {
         expect(ms.compare('#equals a+b', 'a+b-a+a')).toEqual(true);
-    /*    expect(ms.compare('#equals a+b', 'b-a')).toEqual(false);
+        expect(ms.compare('#equals a+b', 'b-a')).toEqual(false);
         expect(ms.compare('#equals (2-3)/(1-4)', '1/3')).toEqual(true);
         expect(ms.compare('#equals 1.2', ':§')).toEqual(false);
         expect(ms.compare('#equals 5x+4(7-2x)/3', '5x+(7-2x)*4/3')).toEqual(true);
         expect(ms.compare('#equals 5x+4(7-2x)/3', '5x+4((7-2x)/3)')).toEqual(true);
         expect(ms.compare('#equals x+2(1-x)', '-x+2')).toEqual(true);
-        expect(ms.compare('#equals 3*(-1)', '3*-1')).toEqual(false);*/
+        expect(ms.compare('#equals 3*(-1)', '3*-1')).toEqual(false);
     });
     it('can handle empty input using #equals', function() {
         expect(ms.compare('#equals ', '0')).toEqual(false);
@@ -62,6 +62,7 @@ describe('mathslang', function() {
     });
     it('can handle unknown variables using #equals', function() {
         expect(ms.compare('#equals a+b', 'a+c')).toEqual(false);
+		expect(ms.compare('#equals x+y', 'x+y')).toEqual(true);
     });
     it('can handle syntactic sugar for multiplication using #equals', function() {
         expect(ms.compare('#equals ab', 'ba')).toEqual(true);
@@ -104,6 +105,10 @@ describe('mathslang', function() {
 		expect(ms.compare('#equals (a^(-1)) * (b^(-1))', '(ab)^(-1)')).toEqual(true);
 		// with ^-sugar
 		expect(ms.compare('#equals (a^-1) * (b^-1)', '(ab)^-1')).toEqual(true);
+	});
+	it('can handle syntactic sugar, binding exponent to denominator', function() {
+		var f = Slang._mathslang.impl.extractUnit;
+		expect( f('m^.5/s^2', 'distance') == 'm/s^2' ).toEqual(true);
 	});
 	it("can multiply denominators Z & W as (1/Z)*(1/W) using #equals", function() {
 		// already workz
@@ -194,10 +199,6 @@ describe('mathslang', function() {
         expect(ms.compare('#approx 3 #epsilon 1', '1.5')).toEqual(false);
 
     });
-	
-	it('is syntactical sugar, binding exponent to denominator', function() {
-		expect( f('m^.5/s^2', 'distance') == 'm/s^2' ).toEqual(true);
-	});
 	
 	it("can compute a term's unit", function(){
 		var f = Slang._mathslang.impl.extractUnit;

@@ -36,25 +36,19 @@ window.Slang._mathslang.semantix = ( function() {
 		this.string	= function( ){ return string(this); };
 		this.simplify=function(n){ return simplify(this, n); }
 	};
+	function _imag	 ( ){ return Slang._mathslang.imaginary; }
+	function _syntax ( ){ return Slang._mathslang.syntax; }
 	//=============================================================================
 	/**OPERATOR**/
 	//=============================================================================
 	// string -> S
 	function present(s) {
 		if(typeof s != "string") throw "`Seman.present(string)' got `"+typeof s+"' instead of `string'";
-		var syntax = Slang._mathslang.syntax.present(s);// Slang._mathslang.syntax.clean(syntax);
+		var syntax = _syntax( ).present(s);// Slang._mathslang.syntax.clean(syntax);
 		return represent(syntax);
 	}
-//var represent_count = 0;
-//var represent_space = '';
-	// []Slang._mathslang.syntax.Q -> S
+	// syntax.Q[ ] -> S
 	function represent(qs) {
-	/*	represent_count += 1;
-		represent_space = '';
-		for(var i=1;i<represent_count;++i)
-			represent_space += '\t';
-		;*/
-//console.log(represent_space+'represent(qs='+Slang._mathslang.syntax.string(qs)+')')
 		var rs = new S();
 		qs.forEach(function(q) {
 			var q0 = representQ(q);
@@ -62,32 +56,23 @@ window.Slang._mathslang.semantix = ( function() {
 			else			rs.queues.push(q0);
 		});
 		rs = solidify(rs);
-//console.log(represent_space+'represent(qs) -> '+rs.string());
-//		represent_count -= 1;
 		return rs;
 	}
 	// Slang._mathslang.syntax.Q -> Q
 	function representQ(q) {
-//console.log(represent_space+'representQ(q='+Slang._mathslang.syntax.stringQ(q)+')');
 		var rq = new Q;
 		rq.fact = q.fact ? q.fact.reduce(function(a,b){return a*b;}, 1) : 1;
-		rq.imag = Slang._mathslang.imaginary.strParse(q.imag);
+		rq.imag = _imag( ).strParse(q.imag);
 		q.exps.forEach(function(e) {
-//console.log(represent_space+'represent(e.radix='+Slang._mathslang.syntax.stringQ(e.radix)+')');
 			var s0 = represent(e.radix);
-//console.log('e.radix');
-//console.log(represent_space+'represent(e.power='+Slang._mathslang.syntax.stringQ(e.power)+')');
 			var e0 = represent(e.power);
-//console.log('e.power');
 			var e1 = s0.expont;
 			s0.expont = e0;
 			if(e1) {
 				var s1 = new S;
 				s0.expont = e1;
 				s1.expont = e0;
-//console.log('(s1='+s1.string()+').queues.push(new Q(1, new I, [s0='+s0.string()+']))');
 				s1.queues.push(new Q(1, { }, [s0]));
-//console.log('s1: '+s1.string());
 				s0 = s1;
 			}
 			rq.sums.push(s0);
@@ -96,12 +81,11 @@ window.Slang._mathslang.semantix = ( function() {
 			var s = represent(qs);
 			rq.sums.push(s);
 		});
-//console.log(represent_space+'representQ(q) -> '+rq.string())
 		return rq;
 	}
 	// Q -> boolean
 	function constQ(q) {
-		return 0==Slang._mathslang.imaginary.len(q.imag)
+		return 0==_imag( ).len(q.imag)
 			&& 0==q.sums.length;
 		// summarys also might be constant! problem?
 	};
@@ -114,7 +98,7 @@ window.Slang._mathslang.semantix = ( function() {
 		&& 1==s.queues[0].fact
 		&& 0==s.queues[0].sums
 		&& !isNaN(constPow)) {
-			Slang._mathslang.imaginary.pow(s.queues[0].imag, constPow);
+			_imag( ).pow(s.queues[0].imag, constPow);
 			s.expont = null;
 		} else
 			s.queues.forEach(function(q0) {
@@ -124,7 +108,7 @@ window.Slang._mathslang.semantix = ( function() {
 			&& 1==s.queues.length
 			&& !s.expont
 			&& 1==s.queues[0].fact
-			&& 0==Slang._mathslang.imaginary.len(s.queues[0].imag)
+			&& 0==_imag( ).len(s.queues[0].imag)
 			&& 1==s.queues[0].sums.length
 			? solidify(s.queues[0].sums[0])
 			: s;
@@ -132,7 +116,7 @@ window.Slang._mathslang.semantix = ( function() {
 	// Q -> Q
 	function solidifyQ(q) {
 		return 1==q.fact
-			&& 0==Slang._mathslang.imaginary.len(q.imag)
+			&& 0==_imag( ).len(q.imag)
 			&& 1==q.sums.length
 			&& 0==q.sums[0].offset
 			&& !q.sums[0].expont
@@ -174,7 +158,7 @@ window.Slang._mathslang.semantix = ( function() {
 	function identQ(q) {
 		return q.fact * q.sums.reduce(function(a, s) {
 			return a * s.calc();
-		}, 1) == 1 && Slang._mathslang.imaginary.empty(q.imag);
+		}, 1) == 1 && _imag( ).empty(q.imag);
 	};
 	// S | Q -> string
 	function string(s) {
@@ -188,7 +172,7 @@ window.Slang._mathslang.semantix = ( function() {
 	function stringQ(q) {
 		return q.sums.reduce(function(a, s){
 			return a + '(' + s.string() + ')';
-		}, ''+q.fact+Slang._mathslang.imaginary.string(q.imag));
+		}, ''+q.fact+_imag( ).string(q.imag));
 	};
 	// S | Q -> S | Q
 	function clone(s0) {
@@ -201,7 +185,7 @@ window.Slang._mathslang.semantix = ( function() {
 	function cloneQ(q0) {
 		var q1 = new Q;
 		q1.fact = q0.fact;
-		q1.imag = Slang._mathslang.imaginary.clone(q0.imag);
+		q1.imag = _imag( ).clone(q0.imag);
 		q1.sums = q0.sums.map(clone);
 		return q1;
 	};
@@ -217,13 +201,12 @@ window.Slang._mathslang.semantix = ( function() {
 	//=EXPAND======================================================================
 	// S -> void
 	function expand(s) {
-//console.log(represent_space+'expand(s='+s.string()+')');
 		var i = 0;
 		while(i < s.queues.length) {
 			// `s0' := expanded part of product-i
 			var s0 = extract(s.queues[i]);
 			// clear non-summary part of product-i
-			Slang._mathslang.imaginary.clear(s.queues[i].imag);
+			_imag( ).clear(s.queues[i].imag);
 			s.queues[i].fact = 1;
 			// try to through `s0' out of its product
 			// conditions:
@@ -247,14 +230,12 @@ window.Slang._mathslang.semantix = ( function() {
 				i++;
 			}
 		};
-//console.log(represent_space+'expand(s) = '+s.string());
 	};
 	// Q -> S
 	function extract(q) {
-//console.log(represent_space+'extract(q='+q.string()+')');
 		// initialize summary accumulator
 		// sa := (0 + A0)
-		var sa = new S(0, [new Q(q.fact, Slang._mathslang.imaginary.clone(q.imag))]);
+		var sa = new S(0, [new Q(q.fact, _imag( ).clone(q.imag))]);
 		// try to expand every summary `q.sums'
 		// - accumulation data `sa'
 		// - erasing past summarys in `q.sums'
@@ -273,44 +254,40 @@ window.Slang._mathslang.semantix = ( function() {
 			// otherwise summary-i remain the same
 			// q -> (A0 + (.. * Si)) (?)
 		}
-//console.log(represent_space+'extract(q) -> '+sa.string());
 		return sa;
 	};
 	// S^2 -> S
 	// conditions:
 	// - SS == null #noexcept
 	function expansion(s0, s1) {
-//console.log(represent_space+'expansion(s0='+s0.string()+', s1='+s1.string()+')');
 		if(s0.expont != null) throw "`expansion': `s0.expont != null'";
 		if(s1.expont != null) throw "`expansion': `s1.expont != null'";
 		var dc = s0.offset * s1.offset; // k0 * k1
 		// + k1 * (a0 + b0) + k0 * (a1 + b1)
 		var qs = s0.queues.map(function(q) { // assert?
-			return new Q(s1.offset * q.fact, Slang._mathslang.imaginary.clone(q.imag), q.sums);
+			return new Q(s1.offset * q.fact, _imag( ).clone(q.imag), q.sums);
 		}).concat(s1.queues.map(function(q) { // assert?
-			return new Q(s0.offset * q.fact, Slang._mathslang.imaginary.clone(q.imag), q.sums);
+			return new Q(s0.offset * q.fact, _imag( ).clone(q.imag), q.sums);
 		}));
 		// + (a0 + b0) * (a1 + b1)
 		s0.queues.forEach(function(q0) {
 			s1.queues.forEach(function(q1) {
 				var imag = { };
-				Slang._mathslang.imaginary.insert(imag, q0.imag);
-				Slang._mathslang.imaginary.insert(imag, q1.imag);
-				qs.push(new Q(q0.fact * q1.fact, Slang._mathslang.imaginary.sort(imag),
+				_imag( ).insert(imag, q0.imag);
+				_imag( ).insert(imag, q1.imag);
+				qs.push(new Q(q0.fact * q1.fact, _imag( ).sort(imag),
 									q0.sums.concat(q1.sums) // assign?
 				));
 			});
 		});
 		s0 = new S(dc, qs.filter(function(q){ return q.fact!=0; }));
-//console.log(represent_space+'expansion(s0, s1) -> '+s0.string());
 		return s0;
 	}
 	//=COMBINE=====================================================================
 	// S -> S
 	function combine(s) {
-//console.log(represent_space+'combine(s='+s.string()+')');
 		var dc = s.offset;	// direct current summary offset
-		var qs = [];		// product summary accumulator
+		var qs = [ ];		// product summary accumulator
 		var q0 = undefined;	// product of last iteration step
 		var ss = s.expont;	// incoming exponent
 		// recursion on exponent
@@ -335,7 +312,7 @@ window.Slang._mathslang.semantix = ( function() {
 			// sort terms by imaginary
 			// TODO correct sort algorithm
 			function(a, b) {
-				return -Slang._mathslang.imaginary.sortFunc(a.imag, b.imag);
+				return -_imag( ).sortFunc(a.imag, b.imag);
 			}
 		).forEach(
 			// combine imaginary
@@ -345,14 +322,13 @@ window.Slang._mathslang.semantix = ( function() {
 			// - i0 == i1
 			// - QS == []
 			function(q1) {
-				if(  q0!=undefined	&& Slang._mathslang.imaginary.equals(q0.imag, q1.imag)
+				if(  q0!=undefined	&& _imag( ).equals(q0.imag, q1.imag)
 									&& q0.sums.length==0 && q1.sums.length==0 ){
 					qs[0].fact += q1.fact;}
 				else { qs.unshift(q1); q0 = q1; } }
 		);
 		qs = qs.filter(function(q){ return q.fact != 0; });
 		s = solidify(new S(dc, qs, ss));
-//console.log(represent_space+'combine(s) -> '+s.string())
 		return s;
 	};
 	// Q -> void
@@ -421,7 +397,6 @@ window.Slang._mathslang.semantix = ( function() {
 	//=EXPOW=======================================================================
 	// S -> S
 	function expow(s0) {
-//console.log(represent_space+'expow(s0='+s0.string()+')');
 		s0 = powerfy(s0);
 		// no recursion on `s0.expont'
 		var v = s0.expont ? s0.expont.calc() : NaN;
@@ -454,14 +429,12 @@ window.Slang._mathslang.semantix = ( function() {
 			q.sums = q.sums.map(expow);
 		});
 		s0 = solidify(s0);
-//console.log(represent_space+'expow(s) = '+s0.string());
 		return s0;
 	};
 	// S -> S
 	// behinderter Name
 	// das `expow' fuer coole Leute !
 	function powerfy(s) {
-//console.log(represent_space+'powerfy(s='+s.string()+')');
 		if(0==s.offset
 		&& 1==s.queues.length
 		&& s.expont) {
@@ -482,10 +455,9 @@ window.Slang._mathslang.semantix = ( function() {
 				q.imag = { };// new I;
 			} else {
 				q.fact = Math.pow(q.fact, v);
-				Slang._mathslang.imaginary.pow(q.imag, v);
+				_imag( ).pow(q.imag, v);
 			}
 		}
-//console.log(represent_space+'powerfy(s) -> '+s.string());
 		return s;
 	};
 	//=============================================================================
@@ -506,7 +478,6 @@ window.Slang._mathslang.semantix = ( function() {
 		if( s0.expont )
 			free_imag( s0.expont )
 		;
-//		console.log("free_imag(s0) -> "+s0.string( ));
 	}
 	// S -> void
 	function free_const(s0) {
@@ -520,7 +491,6 @@ window.Slang._mathslang.semantix = ( function() {
 		if( s0.expont /*&& isNaN(s0.expont.calc( ))*/ )
 			free_const( s0.expont )
 		;
-//		console.log("free_const(s0) -> "+s0.string( ));
 	}
 	function string_imag(s0) {
 		var result = '';

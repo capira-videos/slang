@@ -2,61 +2,46 @@
 window.Slang = window.Slang || { };
 window.Slang._mathslang = window.Slang._mathslang || { };
 window.Slang._mathslang.impl = ( function() {
+	function _lex( ){ return Slang._mathslang.lexical; }
+	function _syntax( ){ return Slang._mathslang.syntax; }
+	function _semantix( ){ return Slang._mathslang.semantix; }
 	function match(a, b, _units) {
 		try {
+		// unit preprocessor
 			if(_units) {
-				a = Slang._mathslang.lexical.replace_units(a, _units);
-				b = Slang._mathslang.lexical.replace_units(b, _units);
+				a = _lex( ).replace_units(a, _units);
+				b = _lex( ).replace_units(b, _units);
 			}
-// console.log("unitified a : "+a);
-// console.log("unitified b : "+b);
-			if(Slang._mathslang.lexical.empty(a) || Slang._mathslang.lexical.empty(b))
+		// case `empty string'
+			if(_lex( ).empty(a) || _lex( ).empty(b))
 				return false
 			;
-		//	a = Slang._mathslang.semantix.present(a);
-// console.log('-----------------------');
-// console.log('a = '+a);
-// console.log('b = '+b);
-// console.log('');
-// console.log("_syntax.present(a=`"+a+"')");
-			a = Slang._mathslang.syntax.present(a);
-// console.log('-> '+Slang._mathslang.syntax.string(a));
-// console.log('');
-// console.log("_syntax.present(b=`"+b+"')");
-			b = Slang._mathslang.syntax.present(b);
-// console.log('-> '+Slang._mathslang.syntax.string(b));
-// console.log('');
-			if(Slang._mathslang.syntax.string(a) == Slang._mathslang.syntax.string(b)) {
-				console.log('syntactic equality: '+Slang._mathslang.syntax.string(a)+' = '+Slang._mathslang.syntax.string(b));
+		// parse into `syntax'
+			a = _syntax( ).present(a);
+			b = _syntax( ).present(b);
+		// syntactical equality ?
+			if( _syntax( ).string(a) == _syntax( ).string(b) ) {
+				console.log('syntactic equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
 				return true;
 			}
-// console.log('Slang._mathslang.semantix a');
-			a = Slang._mathslang.semantix.represent(a);
-// console.log('_semantix.present(a) -> '+a.string());
-// console.log('');
-// console.log('Slang._mathslang.semantix b');
-			b = Slang._mathslang.semantix.represent(b);
-// console.log('_semantix.present(b) -> '+b.string());
-// console.log('');
+		// parse into `semantix'
+			a = _semantix( ).represent(a);
+			b = _semantix( ).represent(b);
+		// syntactical equality ?
 			if(a.string() == b.string()) {
 				console.log('semantic equality: '+a.string()+' = '+b.string());
 				return true;
 			}
-		//	b = Slang._mathslang.semantix.present(b);
-			if(a.calc() == b.calc()) {
+		// non-imaginary computable ?
+			if( a.calc( ) == b.calc( ) ) {
 				console.log('calculate equality: '+a.string()+' = '+b.string());
 				return true;
 			}
-// console.log('Slang._mathslang.semantix.simplify a');
+		// normalize expression
 			a = a.simplify(3);
-// console.log('_semantix.simplify(a, 3) -> '+a.string());
-// console.log('');
-// console.log('Slang._mathslang.semantix.simplify b');
 			b = b.simplify(3);
-// console.log('_semantix.simplify(b, 3) -> '+b.string());
-// console.log('');
-			//console.log(a.string()+"=="+b.string());
-			if(a.string() == b.string()) {
+		// semantical equality ?
+			if( a.string() == b.string() ) {
 				console.log('simplify equality: '+a.string()+' = '+b.string());
 				return true;
 			} else {
@@ -68,15 +53,15 @@ window.Slang._mathslang.impl = ( function() {
 	function matchSyntax(a, b, _units){
 		try {
 			if(_units) {
-				a = Slang._mathslang.lexical.replace_units(a, _units);
-				b = Slang._mathslang.lexical.replace_units(b, _units);
+				a = _lex( ).replace_units(a, _units);
+				b = _lex( ).replace_units(b, _units);
 			}
-			if(Slang._mathslang.lexical.empty(a) || Slang._mathslang.lexical.empty(b))
+			if(_lex( ).empty(a) || _lex( ).empty(b))
 				return false
 			;
-			a = Slang._mathslang.syntax.present(a);
-			b = Slang._mathslang.syntax.present(b);
-			return Slang._mathslang.syntax.string(a) == Slang._mathslang.syntax.string(b);
+			a = _syntax( ).present(a);
+			b = _syntax( ).present(b);
+			return _syntax( ).string(a) == _syntax( ).string(b);
 		} catch(e) { return false; }
 
 	};
@@ -86,65 +71,49 @@ window.Slang._mathslang.impl = ( function() {
 			if(typeof b == 'number') b = ''+b;
 			if(typeof e == 'string') e = parseFloat(e);
 			if(_units) {
-				a = Slang._mathslang.lexical.replace_units(a, _units);
-				b = Slang._mathslang.lexical.replace_units(b, _units);
+				a = _lex( ).replace_units(a, _units);
+				b = _lex( ).replace_units(b, _units);
 			}
-// console.log('after replacing units a = '+a);
-// console.log('after replacing units b = '+b);
-			if(Slang._mathslang.lexical.empty(a) || Slang._mathslang.lexical.empty(b))
+			if(_lex( ).empty(a) || _lex( ).empty(b))
 				return false
 			;
-			
-			a = Slang._mathslang.semantix.present(a);
-			b = Slang._mathslang.semantix.present(b);
-// console.log('arrived in semantix a = '+a.string( ));
-// console.log('arrived in semantix b = '+b.string( ));
-			{	var unit_a = Slang._mathslang.semantix.clone(a);
-				var unit_b = Slang._mathslang.semantix.clone(b);
-				Slang._mathslang.semantix.free_const(unit_a);
-				Slang._mathslang.semantix.free_const(unit_b);
+			a = _semantix( ).present(a);
+			b = _semantix( ).present(b);
+			{	var unit_a = _semantix( ).clone(a);
+				var unit_b = _semantix( ).clone(b);
+				_semantix( ).free_const(unit_a);
+				_semantix( ).free_const(unit_b);
 				unit_a = unit_a.simplify(3);
 				unit_b = unit_b.simplify(3);
-// console.log('simplified unit semantix a = '+unit_a.string( ));
-// console.log('simplified unit semantix b = '+unit_b.string( ));
 				if( unit_a.string( ) != unit_b.string( ) )
 					return false
 				;
 				console.log('units-only equality: '+unit_a.string( )+' = '+unit_b.string( ));
 			}
-			Slang._mathslang.semantix.free_imag(a);
-			Slang._mathslang.semantix.free_imag(b);
+			_semantix( ).free_imag(a);
+			_semantix( ).free_imag(b);
 			a = a.simplify(2);
 			b = b.simplify(2);
-// console.log('simplified unit free a = '+a.string( ));
-// console.log('simplified unit free b = '+b.string( ));
 			a = a.calc();
 			b = b.calc();
 			if(isNaN(a) ||isNaN(b))
 				return false
 			;
 			if( Math.abs(a-b) <= e ) {
-				console.log('approx equality: '+a+' = '+b);
+				console.log('approx equality: '+a+' = '+b+' (epsilon = '+e+')');
 				return true;
 			}
 			return false;
 		} catch(e) { return false; }
 	}
 	function extractUnit(a, _units) {
-	console.log('================================');
-console.log('extractUnit(a='+a+')');
 		if( _units )
-			a = Slang._mathslang.lexical.replace_units(a, _units)
+			a = _lex( ).replace_units(a, _units)
 		;
-console.log('replace_units -> '+a);
-		a = Slang._mathslang.semantix.present(a);
-  console.log('semantix.present -> '+a.string( ));
+		a = _semantix( ).present(a);
 		a = a.simplify(3);
-  console.log('semantix.simplify -> '+a.string( ));
-		Slang._mathslang.semantix.free_const(a);
-  console.log('semantix.free_const -> '+a.string( ));
-		a = Slang._mathslang.semantix.string_imag(a);
-console.log('semantix.string_imag -> '+a);
+		_semantix( ).free_const(a);
+		a = _semantix( ).string_imag(a);
 		function assign(s, i, c) {
 			return s.substr( 0, i ) + c + s.substr( i + c.length );
 		}
@@ -153,7 +122,17 @@ console.log('semantix.string_imag -> '+a);
 			var j=0;
 			while( a[i-2-j]==' ' ) ++ j;
 			if( a[i-2-j]==')' ) {
-				console.log('PARARARARARARARARARAARAR!!');
+				var k=1;
+				var level=1;
+				while( level > 0 && i-2-j-k >= 0 ) {
+					var c = a[i-2-j-k];
+					level += c=='(' ? -1 : c==')' ? +1 : 0;
+					++ k;
+				}
+				while( k >= 0 ) {
+					// fuck to implement
+					-- k;
+				}
 			} else {
 				a = assign(a, i-0, '^');
 				a = assign(a, i-1, a[i-2]);
@@ -161,7 +140,6 @@ console.log('semantix.string_imag -> '+a);
 			}
 		}
 		a = a.replace(/1/g, '');
-console.log('extractUnit -> '+a);
 		return a;
 	}
 	/*
