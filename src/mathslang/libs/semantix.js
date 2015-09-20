@@ -8,34 +8,30 @@ window.Slang._mathslang.semantix = ( function() {
 	//=============================================================================
 	// struct Seman.Q represents a product
 	function Q(f, i, s) {
-		this.fact = 1.0;	// constant		: number
-		this.imag = { };	// imaginary	: string
-		this.sums = [ ];	// summarys		: [][]Q
-		if(f !== undefined) this.fact *= f;
-		if(i !== undefined) this.imag = i; // assign?
-		if(s !== undefined) this.sums = s; // assign?
-		this.calc	= function( ){ return calcQ(this); }
-		this.ident	= function( ){ return identQ(this); };
-		this.string	= function( ){ return stringQ(this); };
-		this.pow	= function(v){ return powQ(this, v); };
-	};
+		this.fact = f !== undefined ? f : 1.0;	// constant		: number
+		this.imag = i !== undefined ? i : { };	// imaginary	: string
+		this.sums = s !== undefined ? s : [ ];	// summarys		: [][]Q
+	}
+	Q.prototype.calc	= function( ){ return calcQ(this); }
+	Q.prototype.ident	= function( ){ return identQ(this); };
+	Q.prototype.string	= function( ){ return stringQ(this); };
+	Q.prototype.pow		= function(v){ return powQ(this, v); };
+//	q.calc() -> calcQ(q)
 	// struct Seman.S represents an summary
 	function S(o, q, e) {
-		this.offset = 0.0;	// constant	: float
-		this.queues = [];	// products	: []Q
-		this.expont = null;	// exponent	: S
-		if(o !== undefined) this.offset += o;
-		if(q !== undefined && q.length > 0) this.queues = q;
-		if(e !== undefined) this.expont = e;
-		this.calc	= function( ){ return calc(this); }
-		this.expand	= function( ){ expand(this); return this; };
-		this.combine= function( ){ return combine(this); }
-		this.expow	= function( ){ return expow(this); };
-		this.akinQ	= function( ){ return akinS2Q(this); };
-		this.ident	= function( ){ return identS(this); };
-		this.string	= function( ){ return string(this); };
-		this.simplify=function(n){ return simplify(this, n); }
+		this.offset = o !== undefined ? o : 0.0;	// constant	: float
+		this.queues = q !== undefined && q.length ? q : [ ];	// products	: []Q
+		this.expont = e !== undefined ? e : null;	// exponent	: S
 	};
+	S.prototype.calc	= function( ){ return calc(this); }
+	S.prototype.expand	= function( ){ expand(this); return this; };
+	S.prototype.combine	= function( ){ return combine(this); }
+	S.prototype.expow	= function( ){ return expow(this); };
+	S.prototype.akinQ	= function( ){ return akinS2Q(this); };
+	S.prototype.ident	= function( ){ return identS(this); };
+	S.prototype.string	= function( ){ return string(this); };
+	S.prototype.simplify=function(n){ return simplify(this, n); };
+	
 	function _imag	 ( ){ return Slang._mathslang.imaginary; }
 	function _syntax ( ){ return Slang._mathslang.syntax; }
 	//=============================================================================
