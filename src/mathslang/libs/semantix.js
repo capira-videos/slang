@@ -7,35 +7,29 @@ window.Slang._mathslang.semantix = ( function() {
 	/**STRUCT**/
 	//=============================================================================
 	// struct Seman.Q represents a product
-	function Q(f, i, s) {
-		this.fact = 1.0;	// constant		: number
-		this.imag = { };	// imaginary	: string
-		this.sums = [ ];	// summarys		: [][]Q
-		if(f !== undefined) this.fact *= f;
-		if(i !== undefined) this.imag = i; // assign?
-		if(s !== undefined) this.sums = s; // assign?
-		this.calc	= function( ){ return calcQ(this); }
-		this.ident	= function( ){ return identQ(this); };
-		this.string	= function( ){ return stringQ(this); };
-		this.pow	= function(v){ return powQ(this, v); };
-	};
+	function Q(f, i, s) { return {
+		fact : f !== undefined ? f : 1.0,
+		imag : i !== undefined ? i : { },
+		sums : s !== undefined ? s : [ ],
+		calc	: function( ){ return calcQ(this); },
+		ident	: function( ){ return identQ(this); },
+		string	: function( ){ return stringQ(this); },
+		pow		: function(v){ return powQ(this, v); }
+	}; };
 	// struct Seman.S represents an summary
-	function S(o, q, e) {
-		this.offset = 0.0;	// constant	: float
-		this.queues = [];	// products	: []Q
-		this.expont = null;	// exponent	: S
-		if(o !== undefined) this.offset += o;
-		if(q !== undefined && q.length > 0) this.queues = q;
-		if(e !== undefined) this.expont = e;
-		this.calc	= function( ){ return calc(this); }
-		this.expand	= function( ){ expand(this); return this; };
-		this.combine= function( ){ return combine(this); }
-		this.expow	= function( ){ return expow(this); };
-		this.akinQ	= function( ){ return akinS2Q(this); };
-		this.ident	= function( ){ return identS(this); };
-		this.string	= function( ){ return string(this); };
-		this.simplify=function(n){ return simplify(this, n); }
-	};
+	function S(o, q, e) { return {
+		offset : o !== undefined				 ? o : 0.0,  // constant : float
+		queues : q !== undefined && q.length > 0 ? q : [ ],  // products : Q[ ]
+		expont : e !== undefined				 ? e : null, // exponent : S
+		calc	: function( ){ return calc(this); },
+		expand	: function( ){ expand(this); return this; },
+		combine : function( ){ return combine(this); },
+		expow	: function( ){ return expow(this); },
+		akinQ	: function( ){ return akinS2Q(this); },
+		ident	: function( ){ return identS(this); },
+		string	: function( ){ return string(this); },
+		simplify: function(n){ return simplify(this, n); }
+	}; };
 	function _imag	 ( ){ return Slang._mathslang.imaginary; }
 	function _syntax ( ){ return Slang._mathslang.syntax; }
 	//=============================================================================

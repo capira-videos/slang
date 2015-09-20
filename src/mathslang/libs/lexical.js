@@ -97,10 +97,12 @@ window.Slang._mathslang.lexical = ( function( ) {
 						s = s.replace(/t/g, '(°1000000g)');
 					;
 					s = s.replace(/Kg/g, '(°1000g)');
+					s = s.replace(/kg/g, '(°1000g)');
 					s = s.replace(/mg/g, '(°0.001g)');
 					break;
 				case 'distance':
 					s = s.replace( /Km/g,  '(° 1000m)');
+					s = s.replace( /km/g,  '(° 1000m)');
 					s = s.replace( /dm/g, '(° 0.100m)');
 					s = s.replace( /cm/g, '(° 0.010m)');
 					s = s.replace( /mm/g, '(° 0.001m)');
