@@ -197,7 +197,7 @@ describe('mathslang', function() {
         expect(ms.compare('#approx 3 #epsilon 1', '3.5')).toEqual(true);
         expect(ms.compare('#approx 3 #epsilon 1', '4.5')).toEqual(false);
         expect(ms.compare('#approx 3 #epsilon 1', '1.5')).toEqual(false);
-
+		expect(ms.compare('#approx 3.14 #epsilon 0.01', '3.13')).toEqual(true);
     });
 	
 	it("can compute a term's unit", function(){

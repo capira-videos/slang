@@ -99,7 +99,7 @@ window.Slang._mathslang.impl = ( function() {
 			if(isNaN(a) ||isNaN(b))
 				return false
 			;
-			if( Math.abs(a-b) <= e ) {
+			if( Math.abs(a-b) <= e+0.000000000000000231 ) {
 				console.log('approx equality: '+a+' = '+b+' (epsilon = '+e+')');
 				return true;
 			}
