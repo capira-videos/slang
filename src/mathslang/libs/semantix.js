@@ -46,7 +46,7 @@ window.Slang._mathslang.semantix = ( function() {
 			// - SQSS == null
 			if(q.sums[i].expont == null) {
 				// sa -> (A0 + B0) := (A0 + B0) * (Ai + Bi)
-				sa = expansion(sa, q.sums[i]);
+				sa = _expansion(sa, q.sums[i]);
 				q.sums.splice(i, 1);
 			} else i++;
 			// otherwise summary-i remain the same
@@ -60,8 +60,29 @@ window.Slang._mathslang.semantix = ( function() {
 		this.queues = q !== undefined && q.length ? q : [ ]; // products : []Q
 		this.expont = e !== undefined ? e : null;			 // exponent : S
 	};
+	S.prototype.unit = function( ) {
+		var s0 = this;
+		var result = '';
+		for( var i=0; i < s0.queues.length; ++i ) {
+			var q = s0.queues[i];
+			result = Object.keys(q.imag).reduce(function(a, k){
+				var times = q.imag[k];
+				return a + ( times==+1 ? k : times==-1 ? '1/'+k : k+'^'+times );
+			}, result);
+			q.sums.forEach(function(s){
+				result += '(' + s.unit( ) + ')';
+			});
+			if( i + 1 < s0.queues.length)
+				result += ' + '
+			;
+		};
+		if( s0.expont )
+			return result + '^' + s0.expont.unit( )
+		;
+		return result;
+	};
 	S.prototype.calc = function( ) {
-		var value = this.offset + this.queues.reduce(function(a,q){return a+calcQ(q);},0);
+		var value = this.offset + this.queues.reduce(function(a,q){return a+_calcQ(q);},0);
 		return this.expont ? Math.pow(value, this.expont.calc( )) : value;
 	}
 	S.prototype.expand	= function( ) {
@@ -70,14 +91,18 @@ window.Slang._mathslang.semantix = ( function() {
 			// `s0' := expanded part of product-i
 			var s0 = this.queues[i].extract( );
 			// clear non-summary part of product-i
-			_imag( ).clear( this.queues[i].imag );
+			{	var a = this.queues[i].imag;
+				Object.keys(a).forEach(function(k){ delete a[k]; });
+			}
 			this.queues[i].fact = 1;
 			// try to through `s0' out of its product
 			// conditions:
 			// - product as identity element leftover
 			// - `s0.expont' == null #noexcept
 			if( this.queues[i].ident( ) ) {
-				if(s0.expont) throw "`expand': `s0.expont' must be `null'.";
+				if( s0.expont )
+					throw "`expand': `s0.expont' must be `null'."
+				;
 				// delete identity element product-i
 				this.queues.splice(i, 1);
 				// concat `s0' to base summary
@@ -112,16 +137,31 @@ window.Slang._mathslang.semantix = ( function() {
 			// extract constant part
 			// qs -> [q0, q1, ..]
 			function(q) {
-				var v = calcQ(q);
+				var v = _calcQ(q);
 				if(!isNaN(v)) {
 					dc += v;
 					return false;
 				} else return true; }
-		).map( combineQ ).sort( // tree traversal
+		).map( _combineQ ).sort( // tree traversal
 			// sort terms by imaginary
 			// TODO correct sort algorithm
 			function(a, b) {
-				return -_imag( ).sortFunc(a.imag, b.imag);
+				return - (	// I^2 -> number
+					function(i0, i1) { /*return Imag.sortValue(a.imag)-Imag.sortValue(b.imag);*/
+						var keys0 = Object.keys(i0);
+						var keys1 = Object.keys(i1);
+						var times = Math.min(keys0.length, keys1.length);
+						for(var i = 0; i < times; i++)
+							if(keys0[i] < keys1[i]) return -1; else
+							if(keys0[i] > keys1[i]) return 1;
+						var delta = keys0.length - keys1.length;
+						if(delta) return delta;
+						for(var i = 0; i < times; i++) {
+							delta = i0[keys0[i]] - i1[keys1[i]];
+							if(delta) return delta;
+						} return 0;
+					})
+				( a.imag, b.imag );
 			}
 		).forEach(
 			// combine imaginary
@@ -131,7 +171,7 @@ window.Slang._mathslang.semantix = ( function() {
 			// - i0 == i1
 			// - QS == []
 			function(q1) {
-				if(  q0!=undefined	&& _imag( ).equals(q0.imag, q1.imag)
+				if(  q0!=undefined	&& JSON.stringify(q0.imag) == JSON.stringify(q1.imag)
 									&& q0.sums.length==0 && q1.sums.length==0 ){
 					qs[0].fact += q1.fact;}
 				else { qs.unshift(q1); q0 = q1; } }
@@ -168,7 +208,7 @@ window.Slang._mathslang.semantix = ( function() {
 				var q = s.queues[0];		// output
 				var s = new S(0, [q]);	// output
 				for(var i = 0; i < q.sums.length; i++)
-					q.sums[i].expont = expansion(q.sums[i].expont, e.clone( ))
+					q.sums[i].expont = _expansion(q.sums[i].expont, e.clone( ))
 				;
 				// i guess expandSS
 				// !!! what about exponts with exponts ?!
@@ -196,7 +236,7 @@ window.Slang._mathslang.semantix = ( function() {
 			while(v > 1) {
 				var s1 = new S;
 				s1.offset = s0.offset;
-				s1.queues = s0.queues.map(cloneQ);
+				s1.queues = s0.queues.map( _cloneQ );
 				rs.push(s1);
 				v--;
 			} s0.expont = v==1 ? null : new S(v);
@@ -237,7 +277,7 @@ window.Slang._mathslang.semantix = ( function() {
 			&& 1==s.queues.length
 			&& !s.expont
 			&& 1==s.queues[0].fact
-			&& 0==_imag( ).len(s.queues[0].imag)
+			&& 0==Object.keys( s.queues[0].imag ).length
 			&& 1==s.queues[0].sums.length
 			? s.queues[0].sums[0].solidify( )
 			: s;
@@ -246,7 +286,7 @@ window.Slang._mathslang.semantix = ( function() {
 		var s0 = this;
 		var s1 = new S;
 		s1.offset = s0.offset;
-		s1.queues = s0.queues.map(cloneQ);
+		s1.queues = s0.queues.map( _cloneQ );
 		s1.expont = s0.expont ? s0.expont.clone( ) : null;
 		return s1;
 	};
@@ -274,11 +314,7 @@ window.Slang._mathslang.semantix = ( function() {
 			this.expont.free_imag( )
 		;
 	};
-	function _imag	 ( ){ return Slang._mathslang.imaginary; }
-	function _syntax ( ){ return Slang._mathslang.syntax; }
-	//=============================================================================
-	/**OPERATOR**/
-	//=============================================================================
+// public
 	// string -> S
 	function present(s) {
 		if(typeof s != "string") throw "`Seman.present(string)' got `"+typeof s+"' instead of `string'";
@@ -292,7 +328,17 @@ window.Slang._mathslang.semantix = ( function() {
 			var q0 = new Q;
 			// compute `representQ'
 			q0.fact = q.fact ? q.fact.reduce(function(a,b){return a*b;}, 1) : 1;
-			q0.imag = _imag( ).strParse(q.imag);
+			q0.imag = (function(str) {
+				var ri = { };
+				for(var i = 0; i < str.length; i++) {
+					var c = str[i];
+					if(ri[c])	ri[c]++;
+					else		ri[c]=1;
+				}
+				return ri;
+			})
+				(q.imag)
+			;
 			q.exps.forEach(function(e) {
 				var s0 = represent(e.radix);
 				var e0 = represent(e.power);
@@ -312,24 +358,28 @@ window.Slang._mathslang.semantix = ( function() {
 				q0.sums.push(s);
 			});
 			// using `representQ'
-			if(constQ(q0))	rs.offset += q0.fact;
+			if(_constQ(q0))	rs.offset += q0.fact;
 			else			rs.queues.push(q0);
 		});
 		rs = rs.solidify( );
 		return rs;
 	}
+
+// private
+	function _imag	 ( ){ return Slang._mathslang.imaginary; }
+	function _syntax ( ){ return Slang._mathslang.syntax; }
 	// Q -> boolean
-	function constQ(q) {
-		return 0==_imag( ).len(q.imag)
+	function _constQ(q) {
+		return 0==Object.keys( q.imag ).length
 			&& 0==q.sums.length;
 		// summarys also might be constant! problem?
 	};
 	// Q -> number
-	function calcQ(q) {
+	function _calcQ(q) {
 		if(Object.keys(q.imag).length > 0) return NaN;
 		return q.fact * q.sums.reduce(function(a,s){return a*s.calc( );},1);
 	};
-	function cloneQ(q0) {
+	function _cloneQ(q0) {
 		var q1 = new Q;
 		q1.fact = q0.fact;
 		q1.imag = _imag( ).clone(q0.imag);
@@ -339,7 +389,7 @@ window.Slang._mathslang.semantix = ( function() {
 	// S^2 -> S
 	// conditions:
 	// - SS == null #noexcept
-	function expansion(s0, s1) {
+	function _expansion(s0, s1) {
 		if(s0.expont != null) throw "`expansion': `s0.expont != null'";
 		if(s1.expont != null) throw "`expansion': `s1.expont != null'";
 		var dc = s0.offset * s1.offset; // k0 * k1
@@ -365,7 +415,7 @@ window.Slang._mathslang.semantix = ( function() {
 	}
 	// Q -> void
 	// combine summarys by totalizing `expont's
-	function combineQ(q) {
+	function _combineQ(q) {
 		var h2is;		// hash from radix to summary indices
 		var h2ks;		// radix-keys of `h2is'
 		var is2com;		// summary indices to combine
@@ -388,7 +438,7 @@ window.Slang._mathslang.semantix = ( function() {
 			// - indicies > 1
 			is2com = h2is[h2ks[i]];
 			if(is2com.length > 1)
-				is2del = is2del.concat(combineE(q.sums, is2com));
+				is2del = is2del.concat( _combineE(q.sums, is2com) );
 		}
 		// deleting past summarys in `q.sums'
 		is2del.sort(function(a,b){ return b-a; }).forEach(
@@ -403,7 +453,7 @@ window.Slang._mathslang.semantix = ( function() {
 	// returns summary indices need to delete
 	// conditions:
 	// - minimum 2 indicies #noexcept
-	function combineE(sums, is2com) {
+	function _combineE(sums, is2com) {
 		if(is2com.length<2) throw "`combineE': "+is2com.length+"/2 indices";
 		var is2del = []			// indices to delete
 		var eA = new S;	// exponent accumulator
@@ -427,42 +477,9 @@ window.Slang._mathslang.semantix = ( function() {
 		sums.push(s0);
 		return is2del;
 	};
-	// S -> void
-	function free_imag(s0) {
-		s0.queues.forEach(function(q){
-			q.imag = '';
-			q.sums.forEach(function(s){
-				s.free_imag( );
-			});
-		});
-		if( s0.expont )
-			s0.expont.free_imag( )
-		;
-	}
-	function unit(s0) {
-		var result = '';
-		for( var i=0; i < s0.queues.length; ++i ) {
-			var q = s0.queues[i];
-			result = Object.keys(q.imag).reduce(function(a, k){
-				var times = q.imag[k];
-				return a + ( times==+1 ? k : times==-1 ? '1/'+k : k+'^'+times );
-			}, result);
-			q.sums.forEach(function(s){
-				result += '(' + unit(s) + ')';
-			});
-			if( i + 1 < s0.queues.length)
-				result += ' + '
-			;
-		};
-		if( s0.expont )
-			return result + '^' + unit(s0.expont)
-		;
-		return result;
-	}
 	return {
 		present		: present,
-		represent	: represent,
-		unit		: unit
+		represent	: represent
 	};
 })
 ( );

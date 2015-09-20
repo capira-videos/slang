@@ -107,7 +107,7 @@ describe('mathslang', function() {
 		expect(ms.compare('#equals (a^-1) * (b^-1)', '(ab)^-1')).toEqual(true);
 	});
 	it('can handle syntactic sugar, binding exponent to denominator', function() {
-		var f = Slang._mathslang.impl.extractUnit;
+		var f = Slang.mathslang.extractUnit;
 		expect( f('m^.5/s^2', 'distance') == 'm/s^2' ).toEqual(true);
 	});
 	it("can multiply denominators Z & W as (1/Z)*(1/W) using #equals", function() {
@@ -201,7 +201,7 @@ describe('mathslang', function() {
     });
 	
 	it("can compute a term's unit", function(){
-		var f = Slang._mathslang.impl.extractUnit;
+		var f = Slang.mathslang.stringUnit;
 		expect( f('1/s+m^25m+7m^2','distance time') == 'm^2 + m^26 + /s' ).toEqual(true);
 		expect( f('1/2*m/s+7','distance time') == 'm/s' ).toEqual(true);
 		expect( f('1/(1+1)m', 'distance') == '/m' ).toEqual(true);
@@ -209,6 +209,21 @@ describe('mathslang', function() {
 		expect( f('(m^.5/s)^2', 'distance') == 'm/s^2' ).toEqual(true);
 		expect( f('(/m)^-1*s^-2') == 'm/s^2' ).toEqual(true);
 	});
+	
+	it("can compute trival unit", function() {
+		var f = Slang.mathslang.extractUnit;
+		expect( f('m') == 'distance' ).toEqual(true);
+		expect( f('s') == 'time' ).toEqual(true);
+		expect( f('g') == 'weight' ).toEqual(true);
+	});
+	it("can compute combined unit", function() {
+		var f = Slang.mathslang.extractUnit;
+		expect( f('m/s') == 'distance time' ).toEqual(true);
+		expect( f('m/s^2') == 'distance time' ).toEqual(true);
+		expect( f('Kg/s') == 'weight time' ).toEqual(true);
+		expect( f('h/g') == 'weight time' ).toEqual(true);
+	});
+
 
     it('can handle variables', function() {
         expect(ms.compare('<& @numerator/@denominator& #equals 1.5>', {
