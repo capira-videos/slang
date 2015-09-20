@@ -141,12 +141,41 @@ Slang.hausdorffslang = (function() {
 })();
 
 'use strict';
-var Slang = Slang || {};
+var Slang = Slang || { };
 Slang.langslang = (function() {
     function compare(expectedValue, givenValue) {
         return Slang.logicslang.compare(expectedValue, givenValue, _compare);
     }
-
+// private
+	function _damerauLevenshtein(a, b) {
+		var matrix = [];
+		// check the easy cases first
+		if (a == b)
+			return 0
+		;
+		if (a.length == 0)
+			return b.length
+		;
+		if (b.length == 0)
+			return a.length
+		;
+		for (var i = 0; i < a.length + 1; i++) {
+			matrix[i] = [];
+			for (var j = 0; j < b.length + 1; j++) {
+				if (i == 0 || j == 0) {
+					matrix[i][j] = Math.max(i, j);
+				} else {
+					matrix[i][j] = Math.min(
+						matrix[i - 1][j] + 1, // insertion
+						matrix[i][j - 1] + 1, // deletion
+						matrix[i - 1][j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1) // substitution
+					);
+					// transposition
+					if (j > 1 && i > 1 && a[i - 1] == b[j - 2] && a[i - 2] == b[j - 1]) {
+						matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + 1);
+		}	}	}	}
+		return matrix[a.length][b.length];
+	}
     function _compare(expectedValue, givenValue) {
 
         expectedValue = expectedValue.trim();
@@ -168,23 +197,20 @@ Slang.langslang = (function() {
             return (expectedValue === givenValue);
         }
     }
-
     function isTypo(a, b) {
-        var dist = Slang.langslang._damerauLevenshtein(a, b);
+        var dist = _damerauLevenshtein(a, b);
         // somewhat arbitrary metric
         return (dist < Math.ceil(Math.sqrt(a.length) - 1));
     }
-
     //this function wrapps String.toLowerCase for minification purposes
     function toLowerCase(a){
         return a.toLowerCase();
     }
-
     return {
         compare: compare
     };
-
-})();
+})
+( );
 
 Slang.langslang._damerauLevenshtein = function(a, b) {
     var matrix = [];
@@ -329,57 +355,258 @@ var LogicParser = function(compareFn) {
 
 'use strict';
 window.Slang = window.Slang || { };
-window.Slang.mathslang = { };
-window.Slang.mathslang.compare = function(expectedValue, givenValue, _units) {
-	return Slang.logicslang.compare(expectedValue, givenValue, this._compare, _units);
-};
+window.Slang.mathslang = ( function( ) {
+	function compare(expectedValue, givenValue, _units) {
+		return Slang.logicslang.compare(expectedValue, givenValue, this._compare, _units);
+	};
+	function _compare(expectedValue, givenValue, _units) {
+		//Inputs could be a Number so we convert them to String:
+		givenValue = givenValue + '';
+		expectedValue = expectedValue + '';
+		var that = this;
+		givenValue = givenValue.trim();
+		expectedValue = expectedValue.trim();
+		if (expectedValue.indexOf('#') === 0) {
+			var prefix = expectedValue.substr(1, expectedValue.indexOf(' ') - 1);
+			expectedValue = expectedValue.substr(expectedValue.indexOf(' ') + 1);
+			switch (prefix) {
+				case 'equals':
+					return match(expectedValue, givenValue, _units);
 
-window.Slang.mathslang.extractUnit = function(expr) {
-	return Slang._mathslang.impl.extractUnit(expr);
-};
+				case 'identic':
+					return matchSyntax(expectedValue, givenValue); // _units
 
-window.Slang.mathslang._compare = function(expectedValue, givenValue, _units) {
-	//Inputs could be a Number so we convert them to String:
-	givenValue = givenValue + '';
-	expectedValue = expectedValue + '';
-	var that = this;
-	givenValue = givenValue.trim();
-	expectedValue = expectedValue.trim();
-	if (expectedValue.indexOf('#') === 0) {
-		var prefix = expectedValue.substr(1, expectedValue.indexOf(' ') - 1);
-		expectedValue = expectedValue.substr(expectedValue.indexOf(' ') + 1);
-		switch (prefix) {
-			case 'equals':
-				return Slang._mathslang.impl.match(expectedValue, givenValue, _units);
+				case 'approx':
+					var values = expectedValue.split('#epsilon');
+					return matchApprox(values[0], givenValue, values[1], _units);
 
-			case 'identic':
-				return Slang._mathslang.impl.matchSyntax(expectedValue, givenValue); // _units
+				case 'lt':
+					return Number.parseFloat(givenValue) < Number.parseFloat(expectedValue);
 
-			case 'approx':
-				var values = expectedValue.split('#epsilon');
-				return Slang._mathslang.impl.matchApprox(values[0], givenValue, values[1], _units);
+				case 'leq':
+					return Number.parseFloat(givenValue) <= Number.parseFloat(expectedValue);
 
-			case 'lt':
-				return Number.parseFloat(givenValue) < Number.parseFloat(expectedValue);
+				case 'gt':
+					return Number.parseFloat(givenValue) > Number.parseFloat(expectedValue);
 
-			case 'leq':
-				return Number.parseFloat(givenValue) <= Number.parseFloat(expectedValue);
+				case 'geq':
+					return Number.parseFloat(givenValue) >= Number.parseFloat(expectedValue);
 
-			case 'gt':
-				return Number.parseFloat(givenValue) > Number.parseFloat(expectedValue);
+				default:
+					return expectedValue === givenValue;
+			}
 
-			case 'geq':
-				return Number.parseFloat(givenValue) >= Number.parseFloat(expectedValue);
-
-			default:
-				return (expectedValue === givenValue);
 		}
-
 	}
-};
+	function extractUnit(s) {
+		var u = '';
+		if( [/Km/, /km/, /dm/, /cm/, /mm/].some( function(e){ return e.test(s); }) ) {
+			u += 'distance ';
+		}
+		if( [/Kg/, /kg/, /g/, /mg/].some( function(e){ return e.test(s); }) ) {
+			u += 'weight ';
+		}
+		if( [/h/, /min/, /s/, /ms/].some( function(e){ return e.test(s); }) ) {
+			u += 'time ';
+		}
+		var index;
+		var q = s.split('m');
+		if( u.indexOf('distance')==-1 && q.length>1 && q.some(function(e){
+			var x = 'gs'.split('').every(function(c){ return !e.length||c!=e[0]; });
+			var y = 'Kkdc'.split('').every(function(c){ return !e.length||c!=e[e.length-1]; });
+			return x && y;
+		})  )
+			u = 'distance '+u;
+		;
+		console.log(u.trim( ));
+		return u.trim( );
+		/*if( (index=u.indexOf('distance')) != -1 )
+				case 'weight':
+					s = s.replace(/ton/g, '(°1000000g)');
+					if( t_is_ton )
+						s = s.replace(/t/g, '(°1000000g)');
+					;
+					s = s.replace(/Kg/g, '(°1000g)');
+					s = s.replace(/kg/g, '(°1000g)');
+					s = s.replace(/mg/g, '(°0.001g)');
+					break;
+				case 'distance':
+					s = s.replace( /Km/g,  '(° 1000m)');
+					s = s.replace( /km/g,  '(° 1000m)');
+					s = s.replace( /dm/g, '(° 0.100m)');
+					s = s.replace( /cm/g, '(° 0.010m)');
+					s = s.replace( /mm/g, '(° 0.001m)');
+					s = s.replace(/min/g,    '(° 60s)');
+					s = s.replace(  /m/g,      '(° m)');
+					m_is_min = false;
+					break;
+				case 'time':
+					s = s.replace(/min/g, '(° 60s)');
+					if( m_is_min )
+						s = s.replace(/m/g, '(° 60s)')
+					;
+					s = s.replace(/h/g, '(° 3600s)');
+					s = s.replace(/s/g, '(° s)');
+					t_is_ton = false;
+					break;
+				default:
+					throw "mathslang does not support unit `"+u+"'";*/
+	}
+	function stringUnit(a, _units) {
+		if( _units )
+			a = _lex( ).replace_units(a, _units)
+		;
+		a = _semantix( ).present(a);
+		a = a.simplify(3);
+		a.free_const( );
+		a = a.unit( );
+		function assign(s, i, c) {
+			return s.substr( 0, i ) + c + s.substr( i + c.length );
+		}
+		for( var i=0; i < a.length; ++i )
+		if( i>0 && a[i-1]=='^' && a[i]=='-' ) {
+			var j=0;
+			while( a[i-2-j]==' ' ) ++ j;
+			if( a[i-2-j]==')' ) {
+				var k=1;
+				var level=1;
+				while( level > 0 && i-2-j-k >= 0 ) {
+					var c = a[i-2-j-k];
+					level += c=='(' ? -1 : c==')' ? +1 : 0;
+					++ k;
+				}
+				while( k >= 0 ) {
+					// fuck to implement
+					-- k;
+				}
+			} else {
+				a = assign(a, i-0, '^');
+				a = assign(a, i-1, a[i-2]);
+				a = assign(a, i-2, '/');
+			}
+		}
+		a = a.replace(/1/g, '');
+		return a;
+	}
+// private
+	function _log(e)		{ }//{ console.log(e); }
+	function _lex( )		{ return Slang._mathslang.lexical; }
+	function _syntax( )		{ return Slang._mathslang.syntax; }
+	function _semantix( )	{ return Slang._mathslang.semantix; }
+	function match(a, b, _units) {
+		try {
+		// unit preprocessor
+			if(_units) {
+				a = _lex( ).replace_units(a, _units);
+				b = _lex( ).replace_units(b, _units);
+			}
+		// case `empty string'
+			if( _lex( ).empty(a) || _lex( ).empty(b) )
+				return false
+			;
+		// parse into `syntax'
+			a = _syntax( ).present(a);
+			b = _syntax( ).present(b);
+		// syntactical equality ?
+			if( _syntax( ).string(a) == _syntax( ).string(b) ) {
+				_log('syntax equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
+				return true;
+			}
+		// parse into `semantix'
+			a = _semantix( ).represent(a);
+			b = _semantix( ).represent(b);
+		// syntactical equality ?
+			if( a.string( ) == b.string( ) ) {
+				_log('semantix equality: '+a.string()+' = '+b.string());
+				return true;
+			}
+		// non-imaginary computable ?
+			if( a.calc( ) == b.calc( ) ) {
+				_log('constant equality: '+a.string( )+' = '+b.string( ));
+				return true;
+			}
+		// normalize expression
+			a = a.simplify(3);
+			b = b.simplify(3);
+		// semantical equality ?
+			if( a.string( ) == b.string( ) ) {
+				_log('simplify equality: '+a.string( )+' = '+b.string( ));
+				return true;
+			} else {
+				_log('no semantix equality: '+a.string( )+' = '+b.string( ));
+				return false;
+			}
+		} catch(e) { return false; }
+	};
+	function matchSyntax(a, b, _units){
+		try {
+			if(_units) {
+				a = _lex( ).replace_units(a, _units);
+				b = _lex( ).replace_units(b, _units);
+			}
+			if( _lex( ).empty(a) || _lex( ).empty(b) )
+				return false
+			;
+			a = _syntax( ).present(a);
+			b = _syntax( ).present(b);
+			if( _syntax( ).string(a) == _syntax( ).string(b) ) {
+				_log('syntax equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
+				return true;
+			}
+			_log('no syntax equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
+			return false;
+		} catch(e) { return false; }
 
-
-
+	};
+	function matchApprox(a, b, e, _units) {
+		try {
+			if(typeof a == 'number') a = ''+a;
+			if(typeof b == 'number') b = ''+b;
+			if(typeof e == 'string') e = parseFloat(e);
+			if(_units) {
+				a = _lex( ).replace_units(a, _units);
+				b = _lex( ).replace_units(b, _units);
+			}
+			if(_lex( ).empty(a) || _lex( ).empty(b))
+				return false
+			;
+			a = _semantix( ).present(a);
+			b = _semantix( ).present(b);
+			{	var unit_a = a.clone( );
+				var unit_b = b.clone( );
+				unit_a.free_const( );
+				unit_b.free_const( );
+				unit_a = unit_a.simplify(3);
+				unit_b = unit_b.simplify(3);
+				if( unit_a.string( ) != unit_b.string( ) )
+					return false
+				;
+			}
+			a.free_imag( );
+			b.free_imag( );
+			a = a.simplify(2);
+			b = b.simplify(2);
+			a = a.calc( );
+			b = b.calc( );
+			if( isNaN(a) || isNaN(b) )
+				return false
+			;
+			if( Math.abs(a-b) <= e+0.000000000000000231 ) {
+				_log('approx equality: '+a+' = '+b+' (epsilon = '+e+')');
+				return true;
+			}
+			return false;
+		} catch(e) { return false; }
+	}
+// public function as JSON
+	return {
+		compare		: compare,
+		_compare	: _compare,
+		extractUnit	: extractUnit,
+		stringUnit	: stringUnit
+	};
+})
+( );
 'use strict';
 /**
 	class `Imag' is the imaginary part of terms
@@ -412,10 +639,6 @@ window.Slang._mathslang.imaginary = ( function() {
 			if(!a[k])	delete a[k];
 		});
 	};
-	// I -> void
-	function clear(a) {
-		Object.keys(a).forEach(function(k){ delete a[k]; });
-	};
 	// I x number -> void
 	function pow(a, x) {
 		Object.keys(a).forEach(function(k) {
@@ -423,66 +646,8 @@ window.Slang._mathslang.imaginary = ( function() {
 			else	a[k] *= x;
 		});
 	};
-/*	// I^2 -> bool
-	function _akin(i0, i1) {
-		return Object.keys(i0).toString() == Object.keys(i1).toString();
-	};
-*/	// I^2 -> bool
-	function equals(i0, i1) {
-		/*console.log(JSON.stringify(i0)+" == "+JSON.stringify(i1)+
-					" => "+(JSON.stringify(i0)==JSON.stringify(i1)));*/
-		return JSON.stringify(i0) == JSON.stringify(i1);
-	};
 	// I -> bool
 	function empty(i0) { return Object.keys(i0).length == 0; };
-	// I^2 -> number
-	function sortFunc(i0, i1) { /*return Imag.sortValue(a.imag)-Imag.sortValue(b.imag);*/
-		var keys0 = Object.keys(i0);
-		var keys1 = Object.keys(i1);
-		var times = Math.min(keys0.length, keys1.length);
-		for(var i = 0; i < times; i++)
-			if(keys0[i] < keys1[i]) return -1; else
-			if(keys0[i] > keys1[i]) return 1;
-		var delta = keys0.length - keys1.length;
-		if(delta) return delta;
-		for(var i = 0; i < times; i++) {
-			delta = i0[keys0[i]] - i1[keys1[i]];
-			if(delta) return delta;
-		} return 0;
-	};
-	// string^2 -> number
-	function strSortFunc(a, b) {
-		var times = Math.min(a.length, b.length);
-		for(var i = 0; i < times; i++)
-			if(a[i] < b[i]) return -1; else
-			if(a[i] > b[i]) return 1;
-		return a.length - b.length;
-	};
-	// string -> string
-	function strSort(str) {
-		return str.split('').sort(function(a, b) {
-			return a.charCodeAt(0) - b.charCodeAt(0); }
-		).reduce(function(a, c){ return a + c; }, '');
-	};
-	// string -> I
-	function strParse(str) {
-		var ri = { };
-		for(var i = 0; i < str.length; i++) {
-			var c = str[i];
-			if(ri[c])	ri[c]++;
-			else		ri[c]=1;
-		}
-		return ri;
-	};
-	// string -> number
-	function strValue(str) {
-		var a = 1;
-		for(var i = 0; i < str.length; i++)
-			a *= str.charCodeAt(0);
-		return a;
-	};
-	// I -> number
-	function len(i) { return Object.keys(i).length; };
 	// I -> I
 	function clone(i) {
 		return Object.keys(i).reduce(function(a, k) {
@@ -500,16 +665,8 @@ window.Slang._mathslang.imaginary = ( function() {
 	return {
 		sort		: sort,
 		insert		: insert,
-		clear		: clear,
 		pow			: pow,
-		equals		: equals,
 		empty		: empty,
-		sortFunc	: sortFunc,
-		strSortFunc	: strSortFunc,
-		strSort		: strSort,
-		strParse	: strParse,
-		strValue	: strValue,
-		len			: len,
 		clone		: clone,
 		string		: string
 	};
@@ -1005,7 +1162,7 @@ window.Slang._mathslang.semantix = ( function() {
 			// - SQSS == null
 			if(q.sums[i].expont == null) {
 				// sa -> (A0 + B0) := (A0 + B0) * (Ai + Bi)
-				sa = expansion(sa, q.sums[i]);
+				sa = _expansion(sa, q.sums[i]);
 				q.sums.splice(i, 1);
 			} else i++;
 			// otherwise summary-i remain the same
@@ -1019,8 +1176,29 @@ window.Slang._mathslang.semantix = ( function() {
 		this.queues = q !== undefined && q.length ? q : [ ]; // products : []Q
 		this.expont = e !== undefined ? e : null;			 // exponent : S
 	};
+	S.prototype.unit = function( ) {
+		var s0 = this;
+		var result = '';
+		for( var i=0; i < s0.queues.length; ++i ) {
+			var q = s0.queues[i];
+			result = Object.keys(q.imag).reduce(function(a, k){
+				var times = q.imag[k];
+				return a + ( times==+1 ? k : times==-1 ? '1/'+k : k+'^'+times );
+			}, result);
+			q.sums.forEach(function(s){
+				result += '(' + s.unit( ) + ')';
+			});
+			if( i + 1 < s0.queues.length)
+				result += ' + '
+			;
+		};
+		if( s0.expont )
+			return result + '^' + s0.expont.unit( )
+		;
+		return result;
+	};
 	S.prototype.calc = function( ) {
-		var value = this.offset + this.queues.reduce(function(a,q){return a+calcQ(q);},0);
+		var value = this.offset + this.queues.reduce(function(a,q){return a+_calcQ(q);},0);
 		return this.expont ? Math.pow(value, this.expont.calc( )) : value;
 	}
 	S.prototype.expand	= function( ) {
@@ -1029,14 +1207,18 @@ window.Slang._mathslang.semantix = ( function() {
 			// `s0' := expanded part of product-i
 			var s0 = this.queues[i].extract( );
 			// clear non-summary part of product-i
-			_imag( ).clear( this.queues[i].imag );
+			{	var a = this.queues[i].imag;
+				Object.keys(a).forEach(function(k){ delete a[k]; });
+			}
 			this.queues[i].fact = 1;
 			// try to through `s0' out of its product
 			// conditions:
 			// - product as identity element leftover
 			// - `s0.expont' == null #noexcept
 			if( this.queues[i].ident( ) ) {
-				if(s0.expont) throw "`expand': `s0.expont' must be `null'.";
+				if( s0.expont )
+					throw "`expand': `s0.expont' must be `null'."
+				;
 				// delete identity element product-i
 				this.queues.splice(i, 1);
 				// concat `s0' to base summary
@@ -1071,16 +1253,31 @@ window.Slang._mathslang.semantix = ( function() {
 			// extract constant part
 			// qs -> [q0, q1, ..]
 			function(q) {
-				var v = calcQ(q);
+				var v = _calcQ(q);
 				if(!isNaN(v)) {
 					dc += v;
 					return false;
 				} else return true; }
-		).map( combineQ ).sort( // tree traversal
+		).map( _combineQ ).sort( // tree traversal
 			// sort terms by imaginary
 			// TODO correct sort algorithm
 			function(a, b) {
-				return -_imag( ).sortFunc(a.imag, b.imag);
+				return - (	// I^2 -> number
+					function(i0, i1) { /*return Imag.sortValue(a.imag)-Imag.sortValue(b.imag);*/
+						var keys0 = Object.keys(i0);
+						var keys1 = Object.keys(i1);
+						var times = Math.min(keys0.length, keys1.length);
+						for(var i = 0; i < times; i++)
+							if(keys0[i] < keys1[i]) return -1; else
+							if(keys0[i] > keys1[i]) return 1;
+						var delta = keys0.length - keys1.length;
+						if(delta) return delta;
+						for(var i = 0; i < times; i++) {
+							delta = i0[keys0[i]] - i1[keys1[i]];
+							if(delta) return delta;
+						} return 0;
+					})
+				( a.imag, b.imag );
 			}
 		).forEach(
 			// combine imaginary
@@ -1090,7 +1287,7 @@ window.Slang._mathslang.semantix = ( function() {
 			// - i0 == i1
 			// - QS == []
 			function(q1) {
-				if(  q0!=undefined	&& _imag( ).equals(q0.imag, q1.imag)
+				if(  q0!=undefined	&& JSON.stringify(q0.imag) == JSON.stringify(q1.imag)
 									&& q0.sums.length==0 && q1.sums.length==0 ){
 					qs[0].fact += q1.fact;}
 				else { qs.unshift(q1); q0 = q1; } }
@@ -1127,7 +1324,7 @@ window.Slang._mathslang.semantix = ( function() {
 				var q = s.queues[0];		// output
 				var s = new S(0, [q]);	// output
 				for(var i = 0; i < q.sums.length; i++)
-					q.sums[i].expont = expansion(q.sums[i].expont, e.clone( ))
+					q.sums[i].expont = _expansion(q.sums[i].expont, e.clone( ))
 				;
 				// i guess expandSS
 				// !!! what about exponts with exponts ?!
@@ -1155,7 +1352,7 @@ window.Slang._mathslang.semantix = ( function() {
 			while(v > 1) {
 				var s1 = new S;
 				s1.offset = s0.offset;
-				s1.queues = s0.queues.map(cloneQ);
+				s1.queues = s0.queues.map( _cloneQ );
 				rs.push(s1);
 				v--;
 			} s0.expont = v==1 ? null : new S(v);
@@ -1196,7 +1393,7 @@ window.Slang._mathslang.semantix = ( function() {
 			&& 1==s.queues.length
 			&& !s.expont
 			&& 1==s.queues[0].fact
-			&& 0==_imag( ).len(s.queues[0].imag)
+			&& 0==Object.keys( s.queues[0].imag ).length
 			&& 1==s.queues[0].sums.length
 			? s.queues[0].sums[0].solidify( )
 			: s;
@@ -1205,7 +1402,7 @@ window.Slang._mathslang.semantix = ( function() {
 		var s0 = this;
 		var s1 = new S;
 		s1.offset = s0.offset;
-		s1.queues = s0.queues.map(cloneQ);
+		s1.queues = s0.queues.map( _cloneQ );
 		s1.expont = s0.expont ? s0.expont.clone( ) : null;
 		return s1;
 	};
@@ -1233,11 +1430,7 @@ window.Slang._mathslang.semantix = ( function() {
 			this.expont.free_imag( )
 		;
 	};
-	function _imag	 ( ){ return Slang._mathslang.imaginary; }
-	function _syntax ( ){ return Slang._mathslang.syntax; }
-	//=============================================================================
-	/**OPERATOR**/
-	//=============================================================================
+// public
 	// string -> S
 	function present(s) {
 		if(typeof s != "string") throw "`Seman.present(string)' got `"+typeof s+"' instead of `string'";
@@ -1251,7 +1444,17 @@ window.Slang._mathslang.semantix = ( function() {
 			var q0 = new Q;
 			// compute `representQ'
 			q0.fact = q.fact ? q.fact.reduce(function(a,b){return a*b;}, 1) : 1;
-			q0.imag = _imag( ).strParse(q.imag);
+			q0.imag = (function(str) {
+				var ri = { };
+				for(var i = 0; i < str.length; i++) {
+					var c = str[i];
+					if(ri[c])	ri[c]++;
+					else		ri[c]=1;
+				}
+				return ri;
+			})
+				(q.imag)
+			;
 			q.exps.forEach(function(e) {
 				var s0 = represent(e.radix);
 				var e0 = represent(e.power);
@@ -1271,24 +1474,28 @@ window.Slang._mathslang.semantix = ( function() {
 				q0.sums.push(s);
 			});
 			// using `representQ'
-			if(constQ(q0))	rs.offset += q0.fact;
+			if(_constQ(q0))	rs.offset += q0.fact;
 			else			rs.queues.push(q0);
 		});
 		rs = rs.solidify( );
 		return rs;
 	}
+
+// private
+	function _imag	 ( ){ return Slang._mathslang.imaginary; }
+	function _syntax ( ){ return Slang._mathslang.syntax; }
 	// Q -> boolean
-	function constQ(q) {
-		return 0==_imag( ).len(q.imag)
+	function _constQ(q) {
+		return 0==Object.keys( q.imag ).length
 			&& 0==q.sums.length;
 		// summarys also might be constant! problem?
 	};
 	// Q -> number
-	function calcQ(q) {
+	function _calcQ(q) {
 		if(Object.keys(q.imag).length > 0) return NaN;
 		return q.fact * q.sums.reduce(function(a,s){return a*s.calc( );},1);
 	};
-	function cloneQ(q0) {
+	function _cloneQ(q0) {
 		var q1 = new Q;
 		q1.fact = q0.fact;
 		q1.imag = _imag( ).clone(q0.imag);
@@ -1298,7 +1505,7 @@ window.Slang._mathslang.semantix = ( function() {
 	// S^2 -> S
 	// conditions:
 	// - SS == null #noexcept
-	function expansion(s0, s1) {
+	function _expansion(s0, s1) {
 		if(s0.expont != null) throw "`expansion': `s0.expont != null'";
 		if(s1.expont != null) throw "`expansion': `s1.expont != null'";
 		var dc = s0.offset * s1.offset; // k0 * k1
@@ -1324,7 +1531,7 @@ window.Slang._mathslang.semantix = ( function() {
 	}
 	// Q -> void
 	// combine summarys by totalizing `expont's
-	function combineQ(q) {
+	function _combineQ(q) {
 		var h2is;		// hash from radix to summary indices
 		var h2ks;		// radix-keys of `h2is'
 		var is2com;		// summary indices to combine
@@ -1347,7 +1554,7 @@ window.Slang._mathslang.semantix = ( function() {
 			// - indicies > 1
 			is2com = h2is[h2ks[i]];
 			if(is2com.length > 1)
-				is2del = is2del.concat(combineE(q.sums, is2com));
+				is2del = is2del.concat( _combineE(q.sums, is2com) );
 		}
 		// deleting past summarys in `q.sums'
 		is2del.sort(function(a,b){ return b-a; }).forEach(
@@ -1362,7 +1569,7 @@ window.Slang._mathslang.semantix = ( function() {
 	// returns summary indices need to delete
 	// conditions:
 	// - minimum 2 indicies #noexcept
-	function combineE(sums, is2com) {
+	function _combineE(sums, is2com) {
 		if(is2com.length<2) throw "`combineE': "+is2com.length+"/2 indices";
 		var is2del = []			// indices to delete
 		var eA = new S;	// exponent accumulator
@@ -1386,42 +1593,9 @@ window.Slang._mathslang.semantix = ( function() {
 		sums.push(s0);
 		return is2del;
 	};
-	// S -> void
-	function free_imag(s0) {
-		s0.queues.forEach(function(q){
-			q.imag = '';
-			q.sums.forEach(function(s){
-				s.free_imag( );
-			});
-		});
-		if( s0.expont )
-			s0.expont.free_imag( )
-		;
-	}
-	function unit(s0) {
-		var result = '';
-		for( var i=0; i < s0.queues.length; ++i ) {
-			var q = s0.queues[i];
-			result = Object.keys(q.imag).reduce(function(a, k){
-				var times = q.imag[k];
-				return a + ( times==+1 ? k : times==-1 ? '1/'+k : k+'^'+times );
-			}, result);
-			q.sums.forEach(function(s){
-				result += '(' + unit(s) + ')';
-			});
-			if( i + 1 < s0.queues.length)
-				result += ' + '
-			;
-		};
-		if( s0.expont )
-			return result + '^' + unit(s0.expont)
-		;
-		return result;
-	}
 	return {
 		present		: present,
-		represent	: represent,
-		unit		: unit
+		represent	: represent
 	};
 })
 ( );
@@ -1432,28 +1606,37 @@ window.Slang._mathslang.semantix = ( function() {
 **/
 window.Slang = window.Slang || { };
 window.Slang._mathslang = window.Slang._mathslang || { };
-window.Slang._mathslang.syntax = ( function() {
+window.Slang._mathslang.syntax = ( function( ) {
 	/**STRUCT**/
-	// struct Syntax.Q represents a product
-	function Q(/*f, i, e, s*/) {
+// struct Syntax.Q represents a product
+	function Q( ) {
 		this.fact = [];	// constants	: []number
 		this.imag = '';	// imaginary	: string
 		this.exps = [];	// exponentials	: []Syntax.E
 		this.sums = [];	// summarys		: [][]Syntax.Q
-		/*if(f !=== undefined) this.fact = f;
-		if(i !=== undefined) this.imag = i;
-		if(e !=== undefined) this.exps = e;
-		if(s !=== undefined) this.sums = s;*/
 	};
-	// struct Syntax.E represents an exponential
-	function E(/*r, p*/) {
-		this.radix = []; // base by sum	: []Syntax.Q
-		this.power = []; // pow by sum	: []Syntax.Q
-		/*if(r !=== undefined) this.radix = r;
-		if(p !=== undefined) this.power = p;*/
+	Q.prototype.string = function( ) {
+		var q = this;
+		var str = ''
+		if(q.fact.length) {
+			str += q.fact[0];
+			for(var i = 1; i < q.fact.length; i++)
+				str += '*' + q.fact[i];
+		}
+		str += q.imag;
+		str += q.exps.reduce(function(a, e){return a+e.string( );},'');
+		str += q.sums.reduce(function(a, s){return a+'('+string(s)+')';},'');
+		return str;
 	};
-	/**OPERATOR**/
-	function _lex( ){ return Slang._mathslang.lexical; }
+// struct Syntax.E represents an exponential
+	function E( ) {
+		this.radix = [ ]; // base by sum	: []Syntax.Q
+		this.power = [ ]; // pow by sum	: []Syntax.Q
+	};
+	E.prototype.string = function( ) {
+		return '(' + string(this.radix) + ')^(' + string(this.power) + ')';
+	};
+// public
 	// string -> Q[]
 	function present(s) {
 		// console.log("present "+s);
@@ -1468,7 +1651,7 @@ window.Slang._mathslang.syntax = ( function() {
 			   if( t.shift().inv )
 					minus = ! minus
 			;
-			var q = pluckQ(t);
+			var q = _pluckQ(t);
 			if( q ) {
 				if(minus)
 					q.fact.unshift(-1)
@@ -1476,11 +1659,27 @@ window.Slang._mathslang.syntax = ( function() {
 				sum.push(q);
 			}
 		} while( t.length > 0 );
-		sort( sum );		
+		_sort( sum );		
 		return sum;
 	};
-	// _lex( ).Token[ ] -> Q
-	function pluckQ(t) {
+	// Q[] | Q | E -> string
+	function string(qs) {
+		var str = ''
+		if(qs.length) {
+			str += qs[0].string( );
+			for(var i = 1; i < qs.length; i++) {
+				var fact = qs[i].fact.reduce(function(a,e){return a*e;},1);
+				var strq = qs[i].string( );
+				str += fact<0 ? strq : '+'+strq; 
+			}
+		}
+		return str;
+	};
+// private
+	function _lex( ){ return Slang._mathslang.lexical; }
+	function _log(e){ }//{ console.log(e); }
+	// lexical.Token[ ] -> Q
+	function _pluckQ(t) {
 		var q = new Q;
 		while( t.length > 0 )switch( t[0].flag ) {
 			case _lex( ).FLAG.N: { // case `number'
@@ -1495,10 +1694,10 @@ window.Slang._mathslang.syntax = ( function() {
 				break;
 			} case _lex( ).FLAG.X: { // case `identifier'
 				var k = t[0].code; // imaginary
-				if(t.shift().inv) { // sub-case `x^-1'
+				if( t.shift().inv ) { // sub-case `x^-1'
 					var e = new E;
-					e.radix.push( X2Q(k) );
-					e.power.push( N2Q(-1) );
+					e.radix.push( _X2Q(k) );
+					e.power.push( _N2Q(-1) );
 					q.exps.push(e);
 				} else
 					q.imag += k
@@ -1511,8 +1710,8 @@ window.Slang._mathslang.syntax = ( function() {
 					//throw "`pluckQ' Token `"+t[0].code+"' is not allowed to be `inv'";
 					// switchPowerFact = true;
 				}
-				e.radix = present(t.shift().code);
-				e.power = pluckT(t);
+				e.radix = present( t.shift( ).code );
+				e.power = _pluckT(t);
 			/*	if( switchPowerFact )
 					//e.power.forEach(function(q){q.fact*=-1;console.log('-> '+q.fact);})
 					e.power.forEach(function(q){q.fact.push(-1);});
@@ -1522,10 +1721,10 @@ window.Slang._mathslang.syntax = ( function() {
 				break;
 			} case _lex( ).FLAG.L: // case `need-to-become-lexed'
 				var qs = present(t[0].code);
-				if(t.shift().inv) { // sub-case `x^-1'
+				if( t.shift().inv ) { // sub-case `x^-1'
 					var e = new E;
 					e.radix = qs;
-					e.power.push(N2Q(-1));
+					e.power.push( _N2Q(-1) );
 					q.exps.push(e);
 				} else
 					q.sums.push(qs)
@@ -1533,18 +1732,18 @@ window.Slang._mathslang.syntax = ( function() {
 				break;
 			case _lex( ).FLAG.O:
 			default:
-				return emptyQ(q) ? null : q;
+				return _emptyQ(q) ? null : q;
 		}
-		return emptyQ(q) ? null : q;
+		return _emptyQ(q) ? null : q;
 	};
 	// Token[] -> Q[]
-	function pluckT(t) {
-		if(t.length > 0) switch(t[0].flag) {
+	function _pluckT(t) {
+		if( t.length > 0 )switch( t[0].flag ) {
 			case _lex( ).FLAG.N:
-				return [ N2Q(t.shift().code) ]
+				return [ _N2Q(t.shift( ).code) ]
 			;
 			case _lex( ).FLAG.X:
-				return [ X2Q(t.shift( ).code) ];
+				return [ _X2Q(t.shift( ).code) ];
 			;
 			case _lex( ).FLAG.E:
 				var e = new E;
@@ -1552,15 +1751,15 @@ window.Slang._mathslang.syntax = ( function() {
 					throw "`pluckT(" + t[0].code + "..)' illegal `inv'"
 				;
 				e.radix = present(t.shift().code);
-				e.power = pluckT(t, true);
-				return [E2Q(e)]
+				e.power = _pluckT(t, true);
+				return [ _E2Q(e) ]
 			;
 			case _lex( ).FLAG.L:
 				return present(t.shift( ).code);
 			;
 			case _lex( ).FLAG.O:
 				t.shift( );
-				var result = pluckT(t);
+				var result = _pluckT(t);
 				result.forEach(function(q) {
 					q.fact.push(-1);
 				});			
@@ -1576,134 +1775,113 @@ window.Slang._mathslang.syntax = ( function() {
 	// Q[] | Q -> void
 	// not up to date anymore
 	// method `clean' should become erased
-	function clean(qs) { qs.forEach(cleanQ); };
-	function cleanQ(q) {
-		// tree recursion
-		q.sums.forEach(clean);
-		q.exps.forEach(function(e) {
-			clean(e.radix);
-			clean(e.power);
-		});
-		// cleanup exponential interleaving
-		// looking for layout `a0 ^ k0' : E
-		var i = 0;
-		while(i < q.exps.length) {
-			var e = q.exps[i];
-			// conditions:
-			if(1 == e.radix.length
-			&& 1 == e.power.length
-			&& 0 == e.radix[0].fact.length
-			&& e.radix[0].imag.length
-			&& 0 == e.radix[0].exps.length
-			&& 0 == e.radix[0].sums.length
-			&& 1 == e.power.length
-			&& 1 == e.power[0].fact.length
-			&& !e.power[0].imag.length
-			&& 0 == e.power[0].exps.length
-			&& 0 == e.power[0].sums.length) {
-				// evaluate exponential interleaving cleanup
-				/*Slang._mathslang.imaginary.pow(e.radix[0].imag, e.power[0].fact[0]);
-				Slang._mathslang.imaginary.insert(q.imag, e.radix[0].imag);*/
-				q.exps.splice(i, 1);
-			} else i++;
-		}
-	}
+	function _clean(qs) {
+		qs.forEach(
+			function(q) {
+				// tree recursion
+				q.sums.forEach(_clean);
+				q.exps.forEach(function(e) {
+					_clean(e.radix);
+					_clean(e.power);
+				});
+				// cleanup exponential interleaving
+				// looking for layout `a0 ^ k0' : E
+				var i = 0;
+				while(i < q.exps.length) {
+					var e = q.exps[i];
+					// conditions:
+					if(1 == e.radix.length
+					&& 1 == e.power.length
+					&& 0 == e.radix[0].fact.length
+					&& e.radix[0].imag.length
+					&& 0 == e.radix[0].exps.length
+					&& 0 == e.radix[0].sums.length
+					&& 1 == e.power.length
+					&& 1 == e.power[0].fact.length
+					&& !e.power[0].imag.length
+					&& 0 == e.power[0].exps.length
+					&& 0 == e.power[0].sums.length) {
+						// evaluate exponential interleaving cleanup
+						/*Slang._mathslang.imaginary.pow(e.radix[0].imag, e.power[0].fact[0]);
+						Slang._mathslang.imaginary.insert(q.imag, e.radix[0].imag);*/
+						q.exps.splice(i, 1);
+					} else i++;
+				}
+			}
+		);
+	};
 	// number -> Q
-	function N2Q(e) {
+	function _N2Q(e) {
 		var q = new Q;
 		q.fact.push(e);
 		return q;
 	};
-	function X2Q(e) {
+	function _X2Q(e) {
 		var q = new Q;
 		if( typeof e != 'string' ) {
-			console.log("not a string");
+			_log("not a string");
 			return q;
 		}
 		q.imag = e;
 		return q;
 	};
-	function E2Q(e) {
+	function _E2Q(e) {
 		var q = new Q;
 		if( typeof e != 'E' ) {
-			console.log("not a E");
+			_log("not a E");
 			return q;
 		}
 		q.exps.push(e);
 		return q;
 	};
 	// Q[] | Q -> void
-	function sort(qs) {
+	function _sort(qs) {
 		qs.forEach(function(q){
-			sortQ(q);
+			q.sums.forEach(function(qs){ _sort(qs); });
+			q.fact.sort(function(a, b){ return a - b; });
+			q.imag = ( function strSort(str) {
+				return str.split('').sort(function(a, b) {
+					return a.charCodeAt(0) - b.charCodeAt(0); }
+				).reduce(function(a, c){ return a + c; }, '');
+			} )
+			( q.imag );
+			q.exps.sort(function(a, b){ return _valueE(a) - _valueE(b); });
+			q.sums.sort(function(a, b){ return _value0(a) - _value0(b); });
 		});
 		qs.sort(function(a,b){
-			return Slang._mathslang.imaginary.strSortFunc(a.imag, b.imag);
+			return (function(a, b) {
+				var times = Math.min(a.length, b.length);
+				for(var i = 0; i < times; i++)
+					if(a[i] < b[i]) return -1; else
+					if(a[i] > b[i]) return  1;
+				return a.length - b.length;
+			})(a.imag, b.imag);
 		});
 	};
-	function sortQ(q) {
-		q.sums.forEach(function(qs){ sort(qs); });
-		q.fact.sort(function(a, b){ return a - b; });
-		q.imag = Slang._mathslang.imaginary.strSort(q.imag);
-		q.exps.sort(function(a, b){ return valueE(a) - valueE(b); });
-		q.sums.sort(function(a, b){ return value0(a) - value0(b); });
-	};
 	// Q[] | E | Q -> number
-	function value0(qs) { return qs.reduce(function(a, b){return a + valueQ(b);}, 0); };
-	function valueE(e) { return Math.pow(16536421.3572347 + value0(e.radix), value0(e.power)); };
-	function valueQ(q) {
+	function _value0(qs) { return qs.reduce(function(a, b){return a + _valueQ(b);}, 0); };
+	function _valueE(e) { return Math.pow(16536421.3572347 + _value0(e.radix), _value0(e.power)); };
+	function _valueQ(q) {
 		return	q.fact.reduce(function(a, b){return a * b;}, 1) *
-				Slang._mathslang.imaginary.strValue(q.imag) *
-				q.exps.reduce(function(a,b){return a*valueE(b);},1) *
-				q.sums.reduce(function(a,b){return a*value0(b);},1);
+					(function(str) {
+						var a = 1;
+						for(var i = 0; i < str.length; i++)
+							a *= str.charCodeAt(0);
+						return a;
+					})(q.imag) *
+				q.exps.reduce(function(a,b){return a*_valueE(b);},1) *
+				q.sums.reduce(function(a,b){return a*_value0(b);},1);
 	};
 	// Q -> bool
-	function emptyQ(e) {
+	function _emptyQ(e) {
 		return e.fact.length == 0
 			&& e.imag.length == 0
 			&& e.exps.length == 0
 			&& e.sums.length == 0;
 	};
-	// Q[] | Q | E -> string
-	function stringQS(qs) {
-		var str = ''
-		if(qs.length) {
-			str += stringQ(qs[0]);
-			for(var i = 1; i < qs.length; i++) {
-				var fact = qs[i].fact.reduce(function(a,e){return a*e;},1);
-				var strq = stringQ(qs[i]);
-				str += fact<0 ? strq : '+'+strq; 
-			}
-		}
-		return str;
-	};
-	function stringQ(q) {
-		var str = ''
-		if(q.fact.length) {
-			str += q.fact[0];
-			for(var i = 1; i < q.fact.length; i++)
-				str += '*' + q.fact[i];
-		}
-		str += q.imag;
-		str += q.exps.reduce(function(a, e){return a+stringE(e);},'');
-		str += q.sums.reduce(function(a, s){return a+'('+stringQS(s)+')';},'');
-		return str;
-	};
-	// WAUJOKOLLPLOKJHGHJIKOLK
-	function stringE(e) {
-		return '(' + stringQS(e.radix) + ')^(' + stringQS(e.power) + ')';
-	};
 	return {
-		Q		: Q,
-		E		: E,
 		present	: present,
-		pluckQ	: pluckQ,
-		N2Q		: N2Q,
-		X2Q		: X2Q,
-		sort	: sort,
-		emptyQ	: emptyQ,
-		string	: stringQS,
-		stringQ	: stringQ
+		string	: string
 	};
 })
 ( );
