@@ -1,5 +1,30 @@
 'use strict';
 var Slang = Slang || {};
+Slang.colorslang = (function() {
+    function compare(expected, given) {
+        return expected === rgbToHex(given);
+    }
+
+    function rgbToHex(c) {
+        return '#' + ((1 << 24) + (c[0] << 16) + (c[1] << 8) + c[2]).toString(16).slice(1);
+    }
+    /*
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+    */
+    return {
+        compare: compare
+    };
+})();
+
+'use strict';
+var Slang = Slang || {};
 Slang.hausdorffslang = (function() {
 
     function compare(X, Y, translateX, translateY, scale) {
@@ -110,31 +135,6 @@ Slang.hausdorffslang = (function() {
         };
     }
 
-    return {
-        compare: compare
-    };
-})();
-
-'use strict';
-var Slang = Slang || {};
-Slang.colorslang = (function() {
-    function compare(expected, given) {
-        return expected === rgbToHex(given);
-    }
-
-    function rgbToHex(c) {
-        return '#' + ((1 << 24) + (c[0] << 16) + (c[1] << 8) + c[2]).toString(16).slice(1);
-    }
-    /*
-        function hexToRgb(hex) {
-            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : null;
-        }
-    */
     return {
         compare: compare
     };
@@ -518,12 +518,11 @@ window.Slang._mathslang.imaginary = ( function() {
 window.Slang = window.Slang || { };
 window.Slang._mathslang = window.Slang._mathslang || { };
 window.Slang._mathslang.impl = ( function() {
-	function _lex( ){ return Slang._mathslang.lexical; }
-	function _syntax( ){ return Slang._mathslang.syntax; }
-	function _semantix( ){ return Slang._mathslang.semantix; }
+	function _log(e)		{ }//{ console.log(e); }
+	function _lex( )		{ return Slang._mathslang.lexical; }
+	function _syntax( )		{ return Slang._mathslang.syntax; }
+	function _semantix( )	{ return Slang._mathslang.semantix; }
 	function match(a, b, _units) {
-		// console.log('');
-		// console.log("match(a=`"+a+"', b=`"+b+"')");
 		try {
 		// unit preprocessor
 			if(_units) {
@@ -531,7 +530,7 @@ window.Slang._mathslang.impl = ( function() {
 				b = _lex( ).replace_units(b, _units);
 			}
 		// case `empty string'
-			if(_lex( ).empty(a) || _lex( ).empty(b))
+			if( _lex( ).empty(a) || _lex( ).empty(b) )
 				return false
 			;
 		// parse into `syntax'
@@ -539,38 +538,36 @@ window.Slang._mathslang.impl = ( function() {
 			b = _syntax( ).present(b);
 		// syntactical equality ?
 			if( _syntax( ).string(a) == _syntax( ).string(b) ) {
-				console.log('syntax equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
+				_log('syntax equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
 				return true;
 			}
 		// parse into `semantix'
 			a = _semantix( ).represent(a);
 			b = _semantix( ).represent(b);
 		// syntactical equality ?
-			if(a.string() == b.string()) {
-				console.log('semantix equality: '+a.string()+' = '+b.string());
+			if( a.string( ) == b.string( ) ) {
+				_log('semantix equality: '+a.string()+' = '+b.string());
 				return true;
 			}
 		// non-imaginary computable ?
 			if( a.calc( ) == b.calc( ) ) {
-				console.log('constant equality: '+a.string()+' = '+b.string());
+				_log('constant equality: '+a.string( )+' = '+b.string( ));
 				return true;
 			}
 		// normalize expression
 			a = a.simplify(3);
 			b = b.simplify(3);
 		// semantical equality ?
-			if( a.string() == b.string() ) {
-				console.log('simplify equality: '+a.string()+' = '+b.string());
+			if( a.string( ) == b.string( ) ) {
+				_log('simplify equality: '+a.string( )+' = '+b.string( ));
 				return true;
 			} else {
-				console.log('no semantix equality: '+a.string()+' = '+b.string());
+				_log('no semantix equality: '+a.string( )+' = '+b.string( ));
 				return false;
 			}
 		} catch(e) { return false; }
 	};
 	function matchSyntax(a, b, _units){
-		// console.log('');
-		// console.log("matchSyntax(a=`"+a+"', b=`"+b+"')");
 		try {
 			if(_units) {
 				a = _lex( ).replace_units(a, _units);
@@ -582,17 +579,15 @@ window.Slang._mathslang.impl = ( function() {
 			a = _syntax( ).present(a);
 			b = _syntax( ).present(b);
 			if( _syntax( ).string(a) == _syntax( ).string(b) ) {
-				console.log('syntax equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
+				_log('syntax equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
 				return true;
 			}
-			console.log('no syntax equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
+			_log('no syntax equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
 			return false;
 		} catch(e) { return false; }
 
 	};
 	function matchApprox(a, b, e, _units) {
-		// console.log('');
-		// console.log("matchApprox(a=`"+a+"', b=`"+b+"', e=`"+e+"')");
 		try {
 			if(typeof a == 'number') a = ''+a;
 			if(typeof b == 'number') b = ''+b;
@@ -606,28 +601,27 @@ window.Slang._mathslang.impl = ( function() {
 			;
 			a = _semantix( ).present(a);
 			b = _semantix( ).present(b);
-			{	var unit_a = _semantix( ).clone(a);
-				var unit_b = _semantix( ).clone(b);
-				_semantix( ).free_const(unit_a);
-				_semantix( ).free_const(unit_b);
+			{	var unit_a = a.clone( );
+				var unit_b = b.clone( );
+				unit_a.free_const( );
+				unit_b.free_const( );
 				unit_a = unit_a.simplify(3);
 				unit_b = unit_b.simplify(3);
 				if( unit_a.string( ) != unit_b.string( ) )
 					return false
 				;
-				// console.log('units-only equality: '+unit_a.string( )+' = '+unit_b.string( ));
 			}
-			_semantix( ).free_imag(a);
-			_semantix( ).free_imag(b);
+			a.free_imag( );
+			b.free_imag( );
 			a = a.simplify(2);
 			b = b.simplify(2);
 			a = a.calc( );
 			b = b.calc( );
-			if(isNaN(a) ||isNaN(b))
+			if( isNaN(a) || isNaN(b) )
 				return false
 			;
 			if( Math.abs(a-b) <= e+0.000000000000000231 ) {
-				console.log('approx equality: '+a+' = '+b+' (epsilon = '+e+')');
+				_log('approx equality: '+a+' = '+b+' (epsilon = '+e+')');
 				return true;
 			}
 			return false;
@@ -639,8 +633,8 @@ window.Slang._mathslang.impl = ( function() {
 		;
 		a = _semantix( ).present(a);
 		a = a.simplify(3);
-		_semantix( ).free_const(a);
-		a = _semantix( ).string_imag(a);
+		a.free_const( );
+		a = _semantix( ).unit(a);
 		function assign(s, i, c) {
 			return s.substr( 0, i ) + c + s.substr( i + c.length );
 		}
@@ -669,26 +663,6 @@ window.Slang._mathslang.impl = ( function() {
 		a = a.replace(/1/g, '');
 		return a;
 	}
-	/*
-	function matchDebug(a){
-		console.log("======================================");
-		a=Syntax.present(a);	console.log(Syntax.string(a));
-		//Syntax.clean(a);		console.log(Syntax.string(a));
-		a=Seman.represent(a);	console.log(a.string());
-		console.log("======================================");
-		a=a_semantix( ).expand();			console.log(a.string());
-		a=a.combine();			console.log(a.string());
-		a=a.expow();			console.log(a.string());
-		console.log("--------------------------------------");
-		a=a_semantix( ).expand();			console.log(a.string());
-		a=a.combine();			console.log(a.string());
-		a=a.expow();			console.log(a.string());
-		console.log("--------------------------------------");
-		a=a_semantix( ).expand();			console.log(a.string());
-		a=a.combine();			console.log(a.string());
-		a=a.expow();			console.log(a.string());
-		console.log("======================================");
-	};*/
 	return {
 		match		: match,
 		matchSyntax	: matchSyntax,
@@ -997,26 +971,268 @@ window.Slang._mathslang.semantix = ( function() {
 		this.imag = i !== undefined ? i : { };	// imaginary	: string
 		this.sums = s !== undefined ? s : [ ];	// summarys		: [][]Q
 	}
-	Q.prototype.calc	= function( ){ return calcQ(this); }
-	Q.prototype.ident	= function( ){ return identQ(this); };
-	Q.prototype.string	= function( ){ return stringQ(this); };
-	Q.prototype.pow		= function(v){ return powQ(this, v); };
-//	q.calc() -> calcQ(q)
+	Q.prototype.ident = function( ) {
+		return this.fact * this.sums.reduce(function(a, s) {
+			return a * s.calc();
+		}, 1) == 1 && _imag( ).empty(this.imag);
+	};
+	Q.prototype.string = function( ) {
+		return this.sums.reduce(function(a, s){
+			return a + '(' + s.string() + ')';
+		}, ''+this.fact+_imag( ).string(this.imag));
+	};
+	Q.prototype.pow = function(v) { return new Q
+	(	Math.pow(this.fact, v),
+		Object.keys(this.imag).reduce(function(a, k) {
+			a[k] = this.imag[k] * v;
+			return a;
+		}, { })
+	); };
+	Q.prototype.extract = function( ) {
+		var q = this;
+		// initialize summary accumulator
+		// sa := (0 + A0)
+		var sa = new S(0, [new Q(q.fact, _imag( ).clone(q.imag))]);
+		// try to expand every summary `q.sums'
+		// - accumulation data `sa'
+		// - erasing past summarys in `q.sums'
+		var i = 0;
+		while(i < q.sums.length) {
+			// shit storm recursion
+			q.sums[i].expand( );
+			// accumulate summary-i
+			// conditions:
+			// - SQSS == null
+			if(q.sums[i].expont == null) {
+				// sa -> (A0 + B0) := (A0 + B0) * (Ai + Bi)
+				sa = expansion(sa, q.sums[i]);
+				q.sums.splice(i, 1);
+			} else i++;
+			// otherwise summary-i remain the same
+			// q -> (A0 + (.. * Si)) (?)
+		}
+		return sa;
+	};
 	// struct Seman.S represents an summary
 	function S(o, q, e) {
-		this.offset = o !== undefined ? o : 0.0;	// constant	: float
-		this.queues = q !== undefined && q.length ? q : [ ];	// products	: []Q
-		this.expont = e !== undefined ? e : null;	// exponent	: S
+		this.offset = o !== undefined ? o : 0.0;			 // constant : float
+		this.queues = q !== undefined && q.length ? q : [ ]; // products : []Q
+		this.expont = e !== undefined ? e : null;			 // exponent : S
 	};
-	S.prototype.calc	= function( ){ return calc(this); }
-	S.prototype.expand	= function( ){ expand(this); return this; };
-	S.prototype.combine	= function( ){ return combine(this); }
-	S.prototype.expow	= function( ){ return expow(this); };
-	S.prototype.akinQ	= function( ){ return akinS2Q(this); };
-	S.prototype.ident	= function( ){ return identS(this); };
-	S.prototype.string	= function( ){ return string(this); };
-	S.prototype.simplify=function(n){ return simplify(this, n); };
-	
+	S.prototype.calc = function( ) {
+		var value = this.offset + this.queues.reduce(function(a,q){return a+calcQ(q);},0);
+		return this.expont ? Math.pow(value, this.expont.calc( )) : value;
+	}
+	S.prototype.expand	= function( ) {
+		var i = 0;
+		while( i < this.queues.length ) {
+			// `s0' := expanded part of product-i
+			var s0 = this.queues[i].extract( );
+			// clear non-summary part of product-i
+			_imag( ).clear( this.queues[i].imag );
+			this.queues[i].fact = 1;
+			// try to through `s0' out of its product
+			// conditions:
+			// - product as identity element leftover
+			// - `s0.expont' == null #noexcept
+			if( this.queues[i].ident( ) ) {
+				if(s0.expont) throw "`expand': `s0.expont' must be `null'.";
+				// delete identity element product-i
+				this.queues.splice(i, 1);
+				// concat `s0' to base summary
+				this.offset += s0.offset;
+				this.queues = s0.queues.concat( this.queues );
+				// correct iteration index
+				i += s0.queues.length;
+			} else {
+				// otherwise put `s0' back to product-i
+				// conditions:
+				// - `calc s0' != `const 1'
+				if( s0.calc( ) != 1 )
+					this.queues[i].sums.push(s0)
+				;
+				++ i;
+			}
+		};
+		return this;
+	};
+	S.prototype.combine	= function( ){
+		var dc = this.offset;	// direct current summary offset
+		var qs = [ ];		// product summary accumulator
+		var q0 = undefined;	// product of last iteration step
+		var ss = this.expont;	// incoming exponent
+		// recursion on exponent
+		// conditions:
+		// - SS != null
+		if(ss) ss = this.expont.combine( );
+		// product-n iteration
+		// accumulators: {dc, qs, q0}
+		this.queues.filter(
+			// extract constant part
+			// qs -> [q0, q1, ..]
+			function(q) {
+				var v = calcQ(q);
+				if(!isNaN(v)) {
+					dc += v;
+					return false;
+				} else return true; }
+		).map( combineQ ).sort( // tree traversal
+			// sort terms by imaginary
+			// TODO correct sort algorithm
+			function(a, b) {
+				return -_imag( ).sortFunc(a.imag, b.imag);
+			}
+		).forEach(
+			// combine imaginary
+			// k0*a^2 + k1*a + k2*a
+			// -> k0*a^2 + (k1+k2)a
+			// conditions:
+			// - i0 == i1
+			// - QS == []
+			function(q1) {
+				if(  q0!=undefined	&& _imag( ).equals(q0.imag, q1.imag)
+									&& q0.sums.length==0 && q1.sums.length==0 ){
+					qs[0].fact += q1.fact;}
+				else { qs.unshift(q1); q0 = q1; } }
+		);
+		qs = qs.filter(function(q){ return q.fact != 0; });
+		return ( new S(dc, qs, ss) ).solidify( );
+	};
+	S.prototype.string = function( ){
+		var e = this.expont ? true : false;
+		return this.queues.reduce(function(a, q) {
+			var strq = q.string( );
+			return a + (q.fact<0 ? strq : '+'+strq);
+		}, (e?'(':'') + this.offset)
+		+ (e?')^('+this.expont.string( )+')':'');
+	};
+	S.prototype.simplify = function(times) {
+		var s0 = this;
+		do {
+			s0 = s0.expand( );
+			s0 = s0.combine( );
+			s0 = s0.expow( );
+		} while( -- times > 0 );
+		return s0;
+	};
+	S.prototype.expow = function( ) {
+		// S -> S
+		// behinderter Name
+		// das `expow' fuer coole Leute !
+		function powerfy(s) {
+			if(0==s.offset
+			&& 1==s.queues.length
+			&& s.expont) {
+				var e = s.expont;			// input
+				var q = s.queues[0];		// output
+				var s = new S(0, [q]);	// output
+				for(var i = 0; i < q.sums.length; i++)
+					q.sums[i].expont = expansion(q.sums[i].expont, e.clone( ))
+				;
+				// i guess expandSS
+				// !!! what about exponts with exponts ?!
+				var v = e.calc();
+				if(isNaN(v)) {
+					q.sums.push( new S(q.fact, q.imag, e.clone( )) );
+					q.fact = 1;
+					q.imag = { };// new I;
+				} else {
+					q.fact = Math.pow(q.fact, v);
+					_imag( ).pow(q.imag, v);
+				}
+			}
+			return s;
+		};
+		var s0 = powerfy(this);
+		// no recursion on `s0.expont'
+		var v = s0.expont ? s0.expont.calc() : NaN;
+		// (3+a)^1.7 := 0+(3+a)(3+a)^0.7
+		// conditions:
+		// - exponent const 
+		// - exponent > 1
+		if(!isNaN(v)) {
+			var rs = [];
+			while(v > 1) {
+				var s1 = new S;
+				s1.offset = s0.offset;
+				s1.queues = s0.queues.map(cloneQ);
+				rs.push(s1);
+				v--;
+			} s0.expont = v==1 ? null : new S(v);
+			if(rs.length) {
+				rs.unshift(s0);
+				s0 = new S;
+				s0.queues.push(new Q(1, { }, rs));
+			}
+		} else if(s0.expont && s0.expont.expont) {
+			// try to multiply s0^(e0^e1)
+			// conditions:
+			// - const `e1'
+			// TODO - ALSO CHECK IF SENSFUL
+		}
+		// shit storm recursion
+		s0.queues.forEach(function(q) {
+			q.sums = q.sums.map(function(s){ return s.expow( ); });
+		});
+		s0 = s0.solidify( );
+		return s0;
+	};
+	S.prototype.solidify = function( ) {
+		var s = this;
+		// a^2
+		var constPow = s.expont ? s.expont.calc( ) : NaN;
+		if(0==s.offset
+		&& 1==s.queues.length
+		&& 1==s.queues[0].fact
+		&& 0==s.queues[0].sums
+		&& !isNaN(constPow)) {
+			_imag( ).pow(s.queues[0].imag, constPow);
+			s.expont = null;
+		} else
+			s.queues.forEach(function(q0) {
+				return q0.sums.map(function(s0){ return s0.solidify( ); })
+			});
+		return 0==s.offset
+			&& 1==s.queues.length
+			&& !s.expont
+			&& 1==s.queues[0].fact
+			&& 0==_imag( ).len(s.queues[0].imag)
+			&& 1==s.queues[0].sums.length
+			? s.queues[0].sums[0].solidify( )
+			: s;
+	};
+	S.prototype.clone = function( ) {
+		var s0 = this;
+		var s1 = new S;
+		s1.offset = s0.offset;
+		s1.queues = s0.queues.map(cloneQ);
+		s1.expont = s0.expont ? s0.expont.clone( ) : null;
+		return s1;
+	};
+	S.prototype.free_const = function( ) {
+		var s0 = this;
+		s0.offset = 0;
+		s0.queues.forEach(function(q){
+			q.fact = 1;
+			q.sums.forEach(function(s){
+				s.free_const(  );
+			});
+		});
+		if( s0.expont /*&& isNaN(s0.expont.calc( ))*/ )
+			s0.expont.free_const( )
+		;
+	};
+	S.prototype.free_imag = function( ) {
+		this.queues.forEach(function(q){
+			q.imag = '';
+			q.sums.forEach(function(s){
+				s.free_imag( );
+			});
+		});
+		if( this.expont )
+			this.expont.free_imag( )
+		;
+	};
 	function _imag	 ( ){ return Slang._mathslang.imaginary; }
 	function _syntax ( ){ return Slang._mathslang.syntax; }
 	//=============================================================================
@@ -1032,37 +1248,34 @@ window.Slang._mathslang.semantix = ( function() {
 	function represent(qs) {
 		var rs = new S();
 		qs.forEach(function(q) {
-			var q0 = representQ(q);
+			var q0 = new Q;
+			// compute `representQ'
+			q0.fact = q.fact ? q.fact.reduce(function(a,b){return a*b;}, 1) : 1;
+			q0.imag = _imag( ).strParse(q.imag);
+			q.exps.forEach(function(e) {
+				var s0 = represent(e.radix);
+				var e0 = represent(e.power);
+				var e1 = s0.expont;
+				s0.expont = e0;
+				if(e1) {
+					var s1 = new S;
+					s0.expont = e1;
+					s1.expont = e0;
+					s1.queues.push(new Q(1, { }, [s0]));
+					s0 = s1;
+				}
+				q0.sums.push(s0);
+			});
+			q.sums.forEach(function(qs){
+				var s = represent(qs);
+				q0.sums.push(s);
+			});
+			// using `representQ'
 			if(constQ(q0))	rs.offset += q0.fact;
 			else			rs.queues.push(q0);
 		});
-		rs = solidify(rs);
+		rs = rs.solidify( );
 		return rs;
-	}
-	// Slang._mathslang.syntax.Q -> Q
-	function representQ(q) {
-		var rq = new Q;
-		rq.fact = q.fact ? q.fact.reduce(function(a,b){return a*b;}, 1) : 1;
-		rq.imag = _imag( ).strParse(q.imag);
-		q.exps.forEach(function(e) {
-			var s0 = represent(e.radix);
-			var e0 = represent(e.power);
-			var e1 = s0.expont;
-			s0.expont = e0;
-			if(e1) {
-				var s1 = new S;
-				s0.expont = e1;
-				s1.expont = e0;
-				s1.queues.push(new Q(1, { }, [s0]));
-				s0 = s1;
-			}
-			rq.sums.push(s0);
-		});
-		q.sums.forEach(function(qs){
-			var s = represent(qs);
-			rq.sums.push(s);
-		});
-		return rq;
 	}
 	// Q -> boolean
 	function constQ(q) {
@@ -1070,172 +1283,17 @@ window.Slang._mathslang.semantix = ( function() {
 			&& 0==q.sums.length;
 		// summarys also might be constant! problem?
 	};
-	// S -> S
-	function solidify(s) {
-		// a^2
-		var constPow = s.expont ? s.expont.calc() : NaN;
-		if(0==s.offset
-		&& 1==s.queues.length
-		&& 1==s.queues[0].fact
-		&& 0==s.queues[0].sums
-		&& !isNaN(constPow)) {
-			_imag( ).pow(s.queues[0].imag, constPow);
-			s.expont = null;
-		} else
-			s.queues.forEach(function(q0) {
-				return q0.sums.map(function(s0){ return solidify(s0); })
-			});
-		return 0==s.offset
-			&& 1==s.queues.length
-			&& !s.expont
-			&& 1==s.queues[0].fact
-			&& 0==_imag( ).len(s.queues[0].imag)
-			&& 1==s.queues[0].sums.length
-			? solidify(s.queues[0].sums[0])
-			: s;
-	};
-	// Q -> Q
-	function solidifyQ(q) {
-		return 1==q.fact
-			&& 0==_imag( ).len(q.imag)
-			&& 1==q.sums.length
-			&& 0==q.sums[0].offset
-			&& !q.sums[0].expont
-			&& 1==q.sums[0].queues.length
-			? solidifyQ(q.sums[0].queues[0])
-			: q;
-	};
-	// S -> number
-	function calc(s) {
-		var value = s.offset + s.queues.reduce(function(a,q){return a+calcQ(q);},0);
-		return s.expont ? Math.pow(value, calc(s.expont)) : value;
-	};
 	// Q -> number
 	function calcQ(q) {
 		if(Object.keys(q.imag).length > 0) return NaN;
-		return q.fact * q.sums.reduce(function(a,s){return a*calc(s);},1);
-	};
-	// S -> bool
-	function akinS2Q(s) {
-		if(!s.expont) return false;
-		return	s.offset==0 && s.queues.length==1 ? true :
-				s.offset!=0 && s.queues.length==0;
-	};
-	// Q x number -> Q
-	function powQ(q, v) {
-		return new Q(
-			Math.pow(q.fact, v),
-			Object.keys(q.imag).reduce(function(a, k) {
-				a[k] = q.imag[k] * v; return a;
-			}, { })
-		);
-	};
-	// S | Q -> bool
-	function identS(s) {
-		return s.offset == 0 && s.expont == null && s.queues.length
-			? !s.queues.some(calcQ)
-			: false;
-	};
-	function identQ(q) {
-		return q.fact * q.sums.reduce(function(a, s) {
-			return a * s.calc();
-		}, 1) == 1 && _imag( ).empty(q.imag);
-	};
-	// S | Q -> string
-	function string(s) {
-		var e = s.expont ? true : false;
-		return s.queues.reduce(function(a, q) {
-			var strq = q.string();
-			return a + (q.fact<0 ? strq : '+'+strq);
-		}, (e?'(':'') + s.offset)
-		+ (e?')^('+s.expont.string()+')':'');
-	};
-	function stringQ(q) {
-		return q.sums.reduce(function(a, s){
-			return a + '(' + s.string() + ')';
-		}, ''+q.fact+_imag( ).string(q.imag));
-	};
-	// S | Q -> S | Q
-	function clone(s0) {
-		var s1 = new S;
-		s1.offset = s0.offset;
-		s1.queues = s0.queues.map(cloneQ);
-		s1.expont = s0.expont ? clone(s0.expont) : null;
-		return s1;
+		return q.fact * q.sums.reduce(function(a,s){return a*s.calc( );},1);
 	};
 	function cloneQ(q0) {
 		var q1 = new Q;
 		q1.fact = q0.fact;
 		q1.imag = _imag( ).clone(q0.imag);
-		q1.sums = q0.sums.map(clone);
+		q1.sums = q0.sums.map( function(s){ return s.clone( ); } );
 		return q1;
-	};
-	// S x number -> S
-	function simplify(s0, times) {
-		do {
-			s0 = s0.expand();
-			s0 = s0.combine();
-			s0 = s0.expow();
-		} while(--times > 0);
-		return s0;
-	};
-	//=EXPAND======================================================================
-	// S -> void
-	function expand(s) {
-		var i = 0;
-		while(i < s.queues.length) {
-			// `s0' := expanded part of product-i
-			var s0 = extract(s.queues[i]);
-			// clear non-summary part of product-i
-			_imag( ).clear(s.queues[i].imag);
-			s.queues[i].fact = 1;
-			// try to through `s0' out of its product
-			// conditions:
-			// - product as identity element leftover
-			// - `s0.expont' == null #noexcept
-			if(s.queues[i].ident()) {
-				if(s0.expont) throw "`expand': `s0.expont' must be `null'.";
-				// delete identity element product-i
-				s.queues.splice(i, 1);
-				// concat `s0' to base summary
-				s.offset += s0.offset;
-				s.queues = s0.queues.concat(s.queues);
-				// correct iteration index
-				i += s0.queues.length;
-			} else {
-				// otherwise put `s0' back to product-i
-				// conditions:
-				// - `calc s0' != `const 1'
-				if(s0.calc() != 1)
-					s.queues[i].sums.push(s0);
-				i++;
-			}
-		};
-	};
-	// Q -> S
-	function extract(q) {
-		// initialize summary accumulator
-		// sa := (0 + A0)
-		var sa = new S(0, [new Q(q.fact, _imag( ).clone(q.imag))]);
-		// try to expand every summary `q.sums'
-		// - accumulation data `sa'
-		// - erasing past summarys in `q.sums'
-		var i = 0;
-		while(i < q.sums.length) {
-			// shit storm recursion
-			expand(q.sums[i]);
-			// accumulate summary-i
-			// conditions:
-			// - SQSS == null
-			if(q.sums[i].expont == null) {
-				// sa -> (A0 + B0) := (A0 + B0) * (Ai + Bi)
-				sa = expansion(sa, q.sums[i]);
-				q.sums.splice(i, 1);
-			} else i++;
-			// otherwise summary-i remain the same
-			// q -> (A0 + (.. * Si)) (?)
-		}
-		return sa;
 	};
 	// S^2 -> S
 	// conditions:
@@ -1264,54 +1322,6 @@ window.Slang._mathslang.semantix = ( function() {
 		s0 = new S(dc, qs.filter(function(q){ return q.fact!=0; }));
 		return s0;
 	}
-	//=COMBINE=====================================================================
-	// S -> S
-	function combine(s) {
-		var dc = s.offset;	// direct current summary offset
-		var qs = [ ];		// product summary accumulator
-		var q0 = undefined;	// product of last iteration step
-		var ss = s.expont;	// incoming exponent
-		// recursion on exponent
-		// conditions:
-		// - SS != null
-		if(ss) ss = combine(s.expont);
-		// product-n iteration
-		// accumulators: {dc, qs, q0}
-		s.queues.filter(
-			// extract constant part
-			// qs -> [q0, q1, ..]
-			function(q) {
-				var v = calcQ(q);
-				if(!isNaN(v)) {
-					dc += v;
-					return false;
-				} else return true; }
-		).map(
-			// tree traversal
-			function(q){ combineQ(q); return q; }
-		).sort(
-			// sort terms by imaginary
-			// TODO correct sort algorithm
-			function(a, b) {
-				return -_imag( ).sortFunc(a.imag, b.imag);
-			}
-		).forEach(
-			// combine imaginary
-			// k0*a^2 + k1*a + k2*a
-			// -> k0*a^2 + (k1+k2)a
-			// conditions:
-			// - i0 == i1
-			// - QS == []
-			function(q1) {
-				if(  q0!=undefined	&& _imag( ).equals(q0.imag, q1.imag)
-									&& q0.sums.length==0 && q1.sums.length==0 ){
-					qs[0].fact += q1.fact;}
-				else { qs.unshift(q1); q0 = q1; } }
-		);
-		qs = qs.filter(function(q){ return q.fact != 0; });
-		s = solidify(new S(dc, qs, ss));
-		return s;
-	};
 	// Q -> void
 	// combine summarys by totalizing `expont's
 	function combineQ(q) {
@@ -1324,7 +1334,7 @@ window.Slang._mathslang.semantix = ( function() {
 			// shit storm recursion
 			s = s.combine(s);
 			var temp = s.expont;	s.expont = null;
-			var k	 = string(s);	s.expont = temp;
+			var k	 = s.string( );	s.expont = temp;
 			// accumulation step: `insert index'
 			if(a[k])	a[k].push(i);
 			else		a[k] = [i];		return a;
@@ -1343,6 +1353,7 @@ window.Slang._mathslang.semantix = ( function() {
 		is2del.sort(function(a,b){ return b-a; }).forEach(
 			function(i){ q.sums.splice(i, 1); }
 		);
+		return q;
 	};
 	// S[] x number[] -> number[]
 	// combines equal summarys by totalizing exponts
@@ -1375,105 +1386,19 @@ window.Slang._mathslang.semantix = ( function() {
 		sums.push(s0);
 		return is2del;
 	};
-	//=EXPOW=======================================================================
-	// S -> S
-	function expow(s0) {
-		s0 = powerfy(s0);
-		// no recursion on `s0.expont'
-		var v = s0.expont ? s0.expont.calc() : NaN;
-		// (3+a)^1.7 := 0+(3+a)(3+a)^0.7
-		// conditions:
-		// - exponent const 
-		// - exponent > 1
-		if(!isNaN(v)) {
-			var rs = [];
-			while(v > 1) {
-				var s1 = new S;
-				s1.offset = s0.offset;
-				s1.queues = s0.queues.map(cloneQ);
-				rs.push(s1);
-				v--;
-			} s0.expont = v==1 ? null : new S(v);
-			if(rs.length) {
-				rs.unshift(s0);
-				s0 = new S;
-				s0.queues.push(new Q(1, { }, rs));
-			}
-		} else if(s0.expont && s0.expont.expont) {
-			// try to multiply s0^(e0^e1)
-			// conditions:
-			// - const `e1'
-			// TODO - ALSO CHECK IF SENSFUL
-		}
-		// shit storm recursion
-		s0.queues.forEach(function(q) {
-			q.sums = q.sums.map(expow);
-		});
-		s0 = solidify(s0);
-		return s0;
-	};
-	// S -> S
-	// behinderter Name
-	// das `expow' fuer coole Leute !
-	function powerfy(s) {
-		if(0==s.offset
-		&& 1==s.queues.length
-		&& s.expont) {
-			var e = s.expont;			// input
-			var q = s.queues[0];		// output
-			var s = new S(0, [q]);	// output
-			for(var i = 0; i < q.sums.length; i++) {
-				var xx0 = q.sums[i].expont;
-				var xx1 = clone(e);
-				q.sums[i].expont = expansion(xx0, xx1);
-			}
-			// i guess expandSS
-			// !!! what about exponts with exponts ?!
-			var v = e.calc();
-			if(isNaN(v)) {
-				q.sums.push(new S(q.fact, q.imag, clone(e)));
-				q.fact = 1;
-				q.imag = { };// new I;
-			} else {
-				q.fact = Math.pow(q.fact, v);
-				_imag( ).pow(q.imag, v);
-			}
-		}
-		return s;
-	};
-	//=============================================================================
-	// S^2 -> S
-	// conditions:
-	// - SS == null
-	function concatS(s0, s1) {
-		return new S(s0.offset+s1.offset, s0.queues.concat(s1.queues));
-	};
 	// S -> void
 	function free_imag(s0) {
 		s0.queues.forEach(function(q){
 			q.imag = '';
 			q.sums.forEach(function(s){
-				free_imag(s);
+				s.free_imag( );
 			});
 		});
 		if( s0.expont )
-			free_imag( s0.expont )
+			s0.expont.free_imag( )
 		;
 	}
-	// S -> void
-	function free_const(s0) {
-		s0.offset = 0;
-		s0.queues.forEach(function(q){
-			q.fact = 1;
-			q.sums.forEach(function(s){
-				free_const(s);
-			});
-		});
-		if( s0.expont /*&& isNaN(s0.expont.calc( ))*/ )
-			free_const( s0.expont )
-		;
-	}
-	function string_imag(s0) {
+	function unit(s0) {
 		var result = '';
 		for( var i=0; i < s0.queues.length; ++i ) {
 			var q = s0.queues[i];
@@ -1482,25 +1407,21 @@ window.Slang._mathslang.semantix = ( function() {
 				return a + ( times==+1 ? k : times==-1 ? '1/'+k : k+'^'+times );
 			}, result);
 			q.sums.forEach(function(s){
-				result += '(' + string_imag(s) + ')';
+				result += '(' + unit(s) + ')';
 			});
 			if( i + 1 < s0.queues.length)
 				result += ' + '
 			;
 		};
 		if( s0.expont )
-			return result + '^' + string_imag(s0.expont)
+			return result + '^' + unit(s0.expont)
 		;
 		return result;
 	}
 	return {
 		present		: present,
 		represent	: represent,
-		clone		: clone,
-		free_imag	: free_imag,
-		free_const	: free_const,
-		simplify	: simplify,
-		string_imag	: string_imag
+		unit		: unit
 	};
 })
 ( );
