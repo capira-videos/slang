@@ -333,6 +333,11 @@ window.Slang.mathslang = { };
 window.Slang.mathslang.compare = function(expectedValue, givenValue, _units) {
 	return Slang.logicslang.compare(expectedValue, givenValue, this._compare, _units);
 };
+
+window.Slang.mathslang.extractUnit = function(expr) {
+	return Slang._mathslang.impl.extractUnit(expr);
+};
+
 window.Slang.mathslang._compare = function(expectedValue, givenValue, _units) {
 	//Inputs could be a Number so we convert them to String:
 	givenValue = givenValue + '';
@@ -616,8 +621,8 @@ window.Slang._mathslang.impl = ( function() {
 			_semantix( ).free_imag(b);
 			a = a.simplify(2);
 			b = b.simplify(2);
-			a = a.calc();
-			b = b.calc();
+			a = a.calc( );
+			b = b.calc( );
 			if(isNaN(a) ||isNaN(b))
 				return false
 			;
@@ -671,15 +676,15 @@ window.Slang._mathslang.impl = ( function() {
 		//Syntax.clean(a);		console.log(Syntax.string(a));
 		a=Seman.represent(a);	console.log(a.string());
 		console.log("======================================");
-		a=a.expand();			console.log(a.string());
+		a=a_semantix( ).expand();			console.log(a.string());
 		a=a.combine();			console.log(a.string());
 		a=a.expow();			console.log(a.string());
 		console.log("--------------------------------------");
-		a=a.expand();			console.log(a.string());
+		a=a_semantix( ).expand();			console.log(a.string());
 		a=a.combine();			console.log(a.string());
 		a=a.expow();			console.log(a.string());
 		console.log("--------------------------------------");
-		a=a.expand();			console.log(a.string());
+		a=a_semantix( ).expand();			console.log(a.string());
 		a=a.combine();			console.log(a.string());
 		a=a.expow();			console.log(a.string());
 		console.log("======================================");
@@ -791,10 +796,12 @@ window.Slang._mathslang.lexical = ( function( ) {
 						s = s.replace(/t/g, '(°1000000g)');
 					;
 					s = s.replace(/Kg/g, '(°1000g)');
+					s = s.replace(/kg/g, '(°1000g)');
 					s = s.replace(/mg/g, '(°0.001g)');
 					break;
 				case 'distance':
 					s = s.replace( /Km/g,  '(° 1000m)');
+					s = s.replace( /km/g,  '(° 1000m)');
 					s = s.replace( /dm/g, '(° 0.100m)');
 					s = s.replace( /cm/g, '(° 0.010m)');
 					s = s.replace( /mm/g, '(° 0.001m)');
@@ -986,34 +993,30 @@ window.Slang._mathslang.semantix = ( function() {
 	//=============================================================================
 	// struct Seman.Q represents a product
 	function Q(f, i, s) {
-		this.fact = 1.0;	// constant		: number
-		this.imag = { };	// imaginary	: string
-		this.sums = [ ];	// summarys		: [][]Q
-		if(f !== undefined) this.fact *= f;
-		if(i !== undefined) this.imag = i; // assign?
-		if(s !== undefined) this.sums = s; // assign?
-		this.calc	= function( ){ return calcQ(this); }
-		this.ident	= function( ){ return identQ(this); };
-		this.string	= function( ){ return stringQ(this); };
-		this.pow	= function(v){ return powQ(this, v); };
-	};
+		this.fact = f !== undefined ? f : 1.0;	// constant		: number
+		this.imag = i !== undefined ? i : { };	// imaginary	: string
+		this.sums = s !== undefined ? s : [ ];	// summarys		: [][]Q
+	}
+	Q.prototype.calc	= function( ){ return calcQ(this); }
+	Q.prototype.ident	= function( ){ return identQ(this); };
+	Q.prototype.string	= function( ){ return stringQ(this); };
+	Q.prototype.pow		= function(v){ return powQ(this, v); };
+//	q.calc() -> calcQ(q)
 	// struct Seman.S represents an summary
 	function S(o, q, e) {
-		this.offset = 0.0;	// constant	: float
-		this.queues = [];	// products	: []Q
-		this.expont = null;	// exponent	: S
-		if(o !== undefined) this.offset += o;
-		if(q !== undefined && q.length > 0) this.queues = q;
-		if(e !== undefined) this.expont = e;
-		this.calc	= function( ){ return calc(this); }
-		this.expand	= function( ){ expand(this); return this; };
-		this.combine= function( ){ return combine(this); }
-		this.expow	= function( ){ return expow(this); };
-		this.akinQ	= function( ){ return akinS2Q(this); };
-		this.ident	= function( ){ return identS(this); };
-		this.string	= function( ){ return string(this); };
-		this.simplify=function(n){ return simplify(this, n); }
+		this.offset = o !== undefined ? o : 0.0;	// constant	: float
+		this.queues = q !== undefined && q.length ? q : [ ];	// products	: []Q
+		this.expont = e !== undefined ? e : null;	// exponent	: S
 	};
+	S.prototype.calc	= function( ){ return calc(this); }
+	S.prototype.expand	= function( ){ expand(this); return this; };
+	S.prototype.combine	= function( ){ return combine(this); }
+	S.prototype.expow	= function( ){ return expow(this); };
+	S.prototype.akinQ	= function( ){ return akinS2Q(this); };
+	S.prototype.ident	= function( ){ return identS(this); };
+	S.prototype.string	= function( ){ return string(this); };
+	S.prototype.simplify=function(n){ return simplify(this, n); };
+	
 	function _imag	 ( ){ return Slang._mathslang.imaginary; }
 	function _syntax ( ){ return Slang._mathslang.syntax; }
 	//=============================================================================

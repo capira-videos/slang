@@ -4,6 +4,11 @@ window.Slang.mathslang = { };
 window.Slang.mathslang.compare = function(expectedValue, givenValue, _units) {
 	return Slang.logicslang.compare(expectedValue, givenValue, this._compare, _units);
 };
+
+window.Slang.mathslang.extractUnit = function(expr) {
+	return Slang._mathslang.impl.extractUnit(expr);
+};
+
 window.Slang.mathslang._compare = function(expectedValue, givenValue, _units) {
 	//Inputs could be a Number so we convert them to String:
 	givenValue = givenValue + '';
