@@ -2,7 +2,7 @@
 window.Slang = window.Slang || {};
 window.Slang.logicslang = {
     // Handles logical operators #or, #and, and #not
-    compare: function(expectedValue, givenValue, compareFn) {
+    compare: function(expectedValue, givenValue, compareFn, _units) {
     	// Replace any @variableName with the variable in givenValue
     	if (typeof givenValue == "object") {
     		for(var key in givenValue) {
@@ -11,7 +11,7 @@ window.Slang.logicslang = {
     		}
     	}
         var lp = new LogicParser(compareFn);
-        return lp.compare(expectedValue, givenValue);
+        return lp.compare(expectedValue, givenValue, _units);
     },
 };
 
@@ -20,11 +20,13 @@ var LogicParser = function(compareFn) {
 
     var tokens = [];
     var givenValue = '';
+	var units = undefined;
     var error = 'ERROR: Mismatched parentheses';
 
-    this.compare = function(expectedValue, _givenValue) {
+    this.compare = function(expectedValue, _givenValue, _units) {
         tokens = getTokens(expectedValue);
         givenValue = _givenValue;
+		units = _units;
         return expression();
     };
 
@@ -94,7 +96,7 @@ var LogicParser = function(compareFn) {
         } else if (token == '>') {
             throw error;
         } else {
-            return compareFn(token, givenValue);
+            return compareFn(token, givenValue, units);
         }
     }
 };
