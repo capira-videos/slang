@@ -7,29 +7,35 @@ window.Slang._mathslang.semantix = ( function() {
 	/**STRUCT**/
 	//=============================================================================
 	// struct Seman.Q represents a product
-	function Q(f, i, s) { return {
-		fact : f !== undefined ? f : 1.0,
-		imag : i !== undefined ? i : { },
-		sums : s !== undefined ? s : [ ],
-		calc	: function( ){ return calcQ(this); },
-		ident	: function( ){ return identQ(this); },
-		string	: function( ){ return stringQ(this); },
-		pow		: function(v){ return powQ(this, v); }
-	}; };
+	function Q(f, i, s) {
+		this.fact = 1.0;	// constant		: number
+		this.imag = { };	// imaginary	: string
+		this.sums = [ ];	// summarys		: [][]Q
+		if(f !== undefined) this.fact *= f;
+		if(i !== undefined) this.imag = i; // assign?
+		if(s !== undefined) this.sums = s; // assign?
+		this.calc	= function( ){ return calcQ(this); }
+		this.ident	= function( ){ return identQ(this); };
+		this.string	= function( ){ return stringQ(this); };
+		this.pow	= function(v){ return powQ(this, v); };
+	};
 	// struct Seman.S represents an summary
-	function S(o, q, e) { return {
-		offset : o !== undefined				 ? o : 0.0,  // constant : float
-		queues : q !== undefined && q.length > 0 ? q : [ ],  // products : Q[ ]
-		expont : e !== undefined				 ? e : null, // exponent : S
-		calc	: function( ){ return calc(this); },
-		expand	: function( ){ expand(this); return this; },
-		combine : function( ){ return combine(this); },
-		expow	: function( ){ return expow(this); },
-		akinQ	: function( ){ return akinS2Q(this); },
-		ident	: function( ){ return identS(this); },
-		string	: function( ){ return string(this); },
-		simplify: function(n){ return simplify(this, n); }
-	}; };
+	function S(o, q, e) {
+		this.offset = 0.0;	// constant	: float
+		this.queues = [];	// products	: []Q
+		this.expont = null;	// exponent	: S
+		if(o !== undefined) this.offset += o;
+		if(q !== undefined && q.length > 0) this.queues = q;
+		if(e !== undefined) this.expont = e;
+		this.calc	= function( ){ return calc(this); }
+		this.expand	= function( ){ expand(this); return this; };
+		this.combine= function( ){ return combine(this); }
+		this.expow	= function( ){ return expow(this); };
+		this.akinQ	= function( ){ return akinS2Q(this); };
+		this.ident	= function( ){ return identS(this); };
+		this.string	= function( ){ return string(this); };
+		this.simplify=function(n){ return simplify(this, n); }
+	};
 	function _imag	 ( ){ return Slang._mathslang.imaginary; }
 	function _syntax ( ){ return Slang._mathslang.syntax; }
 	//=============================================================================
@@ -43,7 +49,7 @@ window.Slang._mathslang.semantix = ( function() {
 	}
 	// syntax.Q[ ] -> S
 	function represent(qs) {
-		var rs = S( );
+		var rs = new S();
 		qs.forEach(function(q) {
 			var q0 = representQ(q);
 			if(constQ(q0))	rs.offset += q0.fact;
@@ -54,7 +60,7 @@ window.Slang._mathslang.semantix = ( function() {
 	}
 	// Slang._mathslang.syntax.Q -> Q
 	function representQ(q) {
-		var rq = Q( );
+		var rq = new Q;
 		rq.fact = q.fact ? q.fact.reduce(function(a,b){return a*b;}, 1) : 1;
 		rq.imag = _imag( ).strParse(q.imag);
 		q.exps.forEach(function(e) {
@@ -63,10 +69,10 @@ window.Slang._mathslang.semantix = ( function() {
 			var e1 = s0.expont;
 			s0.expont = e0;
 			if(e1) {
-				var s1 = S( );
+				var s1 = new S;
 				s0.expont = e1;
 				s1.expont = e0;
-				s1.queues.push( Q(1, { }, [s0]) );
+				s1.queues.push(new Q(1, { }, [s0]));
 				s0 = s1;
 			}
 			rq.sums.push(s0);
@@ -136,7 +142,7 @@ window.Slang._mathslang.semantix = ( function() {
 	};
 	// Q x number -> Q
 	function powQ(q, v) {
-		return Q(
+		return new Q(
 			Math.pow(q.fact, v),
 			Object.keys(q.imag).reduce(function(a, k) {
 				a[k] = q.imag[k] * v; return a;
@@ -170,14 +176,14 @@ window.Slang._mathslang.semantix = ( function() {
 	};
 	// S | Q -> S | Q
 	function clone(s0) {
-		var s1 = S( );
+		var s1 = new S;
 		s1.offset = s0.offset;
 		s1.queues = s0.queues.map(cloneQ);
 		s1.expont = s0.expont ? clone(s0.expont) : null;
 		return s1;
 	};
 	function cloneQ(q0) {
-		var q1 = Q( );
+		var q1 = new Q;
 		q1.fact = q0.fact;
 		q1.imag = _imag( ).clone(q0.imag);
 		q1.sums = q0.sums.map(clone);
@@ -229,7 +235,7 @@ window.Slang._mathslang.semantix = ( function() {
 	function extract(q) {
 		// initialize summary accumulator
 		// sa := (0 + A0)
-		var sa = S(0, [ Q(q.fact, _imag( ).clone(q.imag)) ]);
+		var sa = new S(0, [new Q(q.fact, _imag( ).clone(q.imag))]);
 		// try to expand every summary `q.sums'
 		// - accumulation data `sa'
 		// - erasing past summarys in `q.sums'
@@ -259,9 +265,9 @@ window.Slang._mathslang.semantix = ( function() {
 		var dc = s0.offset * s1.offset; // k0 * k1
 		// + k1 * (a0 + b0) + k0 * (a1 + b1)
 		var qs = s0.queues.map(function(q) { // assert?
-			return Q(s1.offset * q.fact, _imag( ).clone(q.imag), q.sums);
+			return new Q(s1.offset * q.fact, _imag( ).clone(q.imag), q.sums);
 		}).concat(s1.queues.map(function(q) { // assert?
-			return Q(s0.offset * q.fact, _imag( ).clone(q.imag), q.sums);
+			return new Q(s0.offset * q.fact, _imag( ).clone(q.imag), q.sums);
 		}));
 		// + (a0 + b0) * (a1 + b1)
 		s0.queues.forEach(function(q0) {
@@ -269,12 +275,12 @@ window.Slang._mathslang.semantix = ( function() {
 				var imag = { };
 				_imag( ).insert(imag, q0.imag);
 				_imag( ).insert(imag, q1.imag);
-				qs.push(Q(q0.fact * q1.fact, _imag( ).sort(imag),
+				qs.push(new Q(q0.fact * q1.fact, _imag( ).sort(imag),
 									q0.sums.concat(q1.sums) // assign?
 				));
 			});
 		});
-		s0 = S(dc, qs.filter(function(q){ return q.fact!=0; }));
+		s0 = new S(dc, qs.filter(function(q){ return q.fact!=0; }));
 		return s0;
 	}
 	//=COMBINE=====================================================================
@@ -322,7 +328,7 @@ window.Slang._mathslang.semantix = ( function() {
 				else { qs.unshift(q1); q0 = q1; } }
 		);
 		qs = qs.filter(function(q){ return q.fact != 0; });
-		s = solidify(S(dc, qs, ss));
+		s = solidify(new S(dc, qs, ss));
 		return s;
 	};
 	// Q -> void
@@ -367,8 +373,8 @@ window.Slang._mathslang.semantix = ( function() {
 	function combineE(sums, is2com) {
 		if(is2com.length<2) throw "`combineE': "+is2com.length+"/2 indices";
 		var is2del = []			// indices to delete
-		var eA = S( );	// exponent accumulator
-		var s0 = S( );	// radix
+		var eA = new S;	// exponent accumulator
+		var s0 = new S;	// radix
 		s0.offset = sums[is2com[0]].offset;
 		s0.queues = sums[is2com[0]].queues;
 		while(is2com.length) {
@@ -376,7 +382,7 @@ window.Slang._mathslang.semantix = ( function() {
 			if(!e0)
 				eA.offset++;
 			else if(e0.expont)
-				eA.queues.push( Q(1, { },[e0]) );
+				eA.queues.push(new Q(1, { },[e0]));
 			else {
 				eA.offset += e0.offset;
 				eA.queues = eA.queues.concat(e0.queues);
@@ -401,16 +407,16 @@ window.Slang._mathslang.semantix = ( function() {
 		if(!isNaN(v)) {
 			var rs = [];
 			while(v > 1) {
-				var s1 = S( );
+				var s1 = new S;
 				s1.offset = s0.offset;
 				s1.queues = s0.queues.map(cloneQ);
 				rs.push(s1);
 				v--;
-			} s0.expont = v==1 ? null : S(v);
+			} s0.expont = v==1 ? null : new S(v);
 			if(rs.length) {
 				rs.unshift(s0);
-				s0 = S( );
-				s0.queues.push( Q(1, { }, rs) );
+				s0 = new S;
+				s0.queues.push(new Q(1, { }, rs));
 			}
 		} else if(s0.expont && s0.expont.expont) {
 			// try to multiply s0^(e0^e1)
@@ -434,7 +440,7 @@ window.Slang._mathslang.semantix = ( function() {
 		&& s.expont) {
 			var e = s.expont;			// input
 			var q = s.queues[0];		// output
-			var s = S(0, [q]);	// output
+			var s = new S(0, [q]);	// output
 			for(var i = 0; i < q.sums.length; i++) {
 				var xx0 = q.sums[i].expont;
 				var xx1 = clone(e);
@@ -444,7 +450,7 @@ window.Slang._mathslang.semantix = ( function() {
 			// !!! what about exponts with exponts ?!
 			var v = e.calc();
 			if(isNaN(v)) {
-				q.sums.push(S(q.fact, q.imag, clone(e)));
+				q.sums.push(new S(q.fact, q.imag, clone(e)));
 				q.fact = 1;
 				q.imag = { };// new I;
 			} else {
@@ -459,7 +465,7 @@ window.Slang._mathslang.semantix = ( function() {
 	// conditions:
 	// - SS == null
 	function concatS(s0, s1) {
-		return S(s0.offset+s1.offset, s0.queues.concat(s1.queues));
+		return new S(s0.offset+s1.offset, s0.queues.concat(s1.queues));
 	};
 	// S -> void
 	function free_imag(s0) {

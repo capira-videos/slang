@@ -105,8 +105,8 @@ window.Slang._mathslang.impl = ( function() {
 			_semantix( ).free_imag(b);
 			a = a.simplify(2);
 			b = b.simplify(2);
-			a = a.calc();
-			b = b.calc();
+			a = a.calc( );
+			b = b.calc( );
 			if(isNaN(a) ||isNaN(b))
 				return false
 			;
@@ -160,15 +160,15 @@ window.Slang._mathslang.impl = ( function() {
 		//Syntax.clean(a);		console.log(Syntax.string(a));
 		a=Seman.represent(a);	console.log(a.string());
 		console.log("======================================");
-		a=a.expand();			console.log(a.string());
+		a=a_semantix( ).expand();			console.log(a.string());
 		a=a.combine();			console.log(a.string());
 		a=a.expow();			console.log(a.string());
 		console.log("--------------------------------------");
-		a=a.expand();			console.log(a.string());
+		a=a_semantix( ).expand();			console.log(a.string());
 		a=a.combine();			console.log(a.string());
 		a=a.expow();			console.log(a.string());
 		console.log("--------------------------------------");
-		a=a.expand();			console.log(a.string());
+		a=a_semantix( ).expand();			console.log(a.string());
 		a=a.combine();			console.log(a.string());
 		a=a.expow();			console.log(a.string());
 		console.log("======================================");
