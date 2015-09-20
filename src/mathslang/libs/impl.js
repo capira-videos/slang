@@ -6,6 +6,8 @@ window.Slang._mathslang.impl = ( function() {
 	function _syntax( ){ return Slang._mathslang.syntax; }
 	function _semantix( ){ return Slang._mathslang.semantix; }
 	function match(a, b, _units) {
+		// console.log('');
+		// console.log("match(a=`"+a+"', b=`"+b+"')");
 		try {
 		// unit preprocessor
 			if(_units) {
@@ -21,7 +23,7 @@ window.Slang._mathslang.impl = ( function() {
 			b = _syntax( ).present(b);
 		// syntactical equality ?
 			if( _syntax( ).string(a) == _syntax( ).string(b) ) {
-				console.log('syntactic equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
+				console.log('syntax equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
 				return true;
 			}
 		// parse into `semantix'
@@ -29,12 +31,12 @@ window.Slang._mathslang.impl = ( function() {
 			b = _semantix( ).represent(b);
 		// syntactical equality ?
 			if(a.string() == b.string()) {
-				console.log('semantic equality: '+a.string()+' = '+b.string());
+				console.log('semantix equality: '+a.string()+' = '+b.string());
 				return true;
 			}
 		// non-imaginary computable ?
 			if( a.calc( ) == b.calc( ) ) {
-				console.log('calculate equality: '+a.string()+' = '+b.string());
+				console.log('constant equality: '+a.string()+' = '+b.string());
 				return true;
 			}
 		// normalize expression
@@ -45,27 +47,36 @@ window.Slang._mathslang.impl = ( function() {
 				console.log('simplify equality: '+a.string()+' = '+b.string());
 				return true;
 			} else {
-				console.log('no equality: '+a.string()+' = '+b.string());
+				console.log('no semantix equality: '+a.string()+' = '+b.string());
 				return false;
 			}
 		} catch(e) { return false; }
 	};
 	function matchSyntax(a, b, _units){
+		// console.log('');
+		// console.log("matchSyntax(a=`"+a+"', b=`"+b+"')");
 		try {
 			if(_units) {
 				a = _lex( ).replace_units(a, _units);
 				b = _lex( ).replace_units(b, _units);
 			}
-			if(_lex( ).empty(a) || _lex( ).empty(b))
+			if( _lex( ).empty(a) || _lex( ).empty(b) )
 				return false
 			;
 			a = _syntax( ).present(a);
 			b = _syntax( ).present(b);
-			return _syntax( ).string(a) == _syntax( ).string(b);
+			if( _syntax( ).string(a) == _syntax( ).string(b) ) {
+				console.log('syntax equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
+				return true;
+			}
+			console.log('no syntax equality: '+_syntax( ).string(a)+' = '+_syntax( ).string(b));
+			return false;
 		} catch(e) { return false; }
 
 	};
 	function matchApprox(a, b, e, _units) {
+		// console.log('');
+		// console.log("matchApprox(a=`"+a+"', b=`"+b+"', e=`"+e+"')");
 		try {
 			if(typeof a == 'number') a = ''+a;
 			if(typeof b == 'number') b = ''+b;
@@ -88,7 +99,7 @@ window.Slang._mathslang.impl = ( function() {
 				if( unit_a.string( ) != unit_b.string( ) )
 					return false
 				;
-				console.log('units-only equality: '+unit_a.string( )+' = '+unit_b.string( ));
+				// console.log('units-only equality: '+unit_a.string( )+' = '+unit_b.string( ));
 			}
 			_semantix( ).free_imag(a);
 			_semantix( ).free_imag(b);
