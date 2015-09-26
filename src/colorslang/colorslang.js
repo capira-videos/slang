@@ -2,7 +2,7 @@
 var Slang = Slang || {};
 Slang.colorslang = (function() {
     function compare(expected, given) {
-        return expected === rgbToHex(given);
+        return expected.toLowerCase() === rgbToHex(given).toLowerCase();
     }
 
     function rgbToHex(c) {
