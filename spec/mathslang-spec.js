@@ -237,10 +237,20 @@ describe('mathslang', function() {
     });
 
     it('can handle vectors', function() {
+        expect(ms.compare('<& [@1443385985478, @1443385986479] & #vecEquals [1,2]>', {
+            1443385985478: '20',
+            1443385986479: '40'
+        })).toEqual(true); 
         expect(ms.compare('#vecEquals [1,2]', '[1,2]')).toEqual(true);
         expect(ms.compare('#vecEquals [3,2]', '[6,4]')).toEqual(true);
         expect(ms.compare('#vecEquals [3.2,2.2]', '[3.2,2.2]')).toEqual(true);
         expect(ms.compare('#vecEquals [1,2,1]', '[1,2,1]')).toEqual(true);
         expect(ms.compare('#vecEquals [1,0,1.5]', '[2,0,3]')).toEqual(true);
+        expect(ms.compare('#vecEquals [1,2]', '[2,4]')).toEqual(true);
+        expect(ms.compare('<& [@x1,@x2] & #vecEquals [2,4]>', {
+            x1: 1,
+            x2: 2
+        })).toEqual(true);
+        
     });
 });
