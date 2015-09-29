@@ -558,52 +558,56 @@ window.Slang._mathslang.lexical = ( function( ) {
 			return false;
 		return true;
 	};
+
 	// String -> String
 	function replace_units(s, u) {
 		var m_is_min = true;
 		var t_is_ton = true;
 		// ! potential left-side operand !
 		// replacing non-elementary units &
-		// place marker `°' for potential operand
+		// place marker `Â°' for potential operand
 		u.split(' ').forEach(function(u) {
 			switch(u) {
 				case 'weight':
-					s = s.replace(/ton/g, '(°1000000g)');
+					s = s.replace(/ton/g, '(Â°1000000g)');
 					if( t_is_ton )
-						s = s.replace(/t/g, '(°1000000g)');
+						s = s.replace(/t/g, '(Â°1000000g)');
 					;
-					s = s.replace(/Kg/g, '(°1000g)');
-					s = s.replace(/kg/g, '(°1000g)');
-					s = s.replace(/mg/g, '(°0.001g)');
+					s = s.replace(/Kg/g, '(Â°1000g)');
+					s = s.replace(/kg/g, '(Â°1000g)');
+					s = s.replace(/mg/g, '(Â°0.001g)');
 					break;
 				case 'distance':
-					s = s.replace( /Km/g,  '(° 1000m)');
-					s = s.replace( /km/g,  '(° 1000m)');
-					s = s.replace( /dm/g, '(° 0.100m)');
-					s = s.replace( /cm/g, '(° 0.010m)');
-					s = s.replace( /mm/g, '(° 0.001m)');
-					s = s.replace(/min/g,    '(° 60s)');
-					s = s.replace(  /m/g,      '(° m)');
+					s = s.replace( /Km/g,  '(Â° 1000m)');
+					s = s.replace( /km/g,  '(Â° 1000m)');
+					s = s.replace( /dm/g, '(Â° 0.100m)');
+					s = s.replace( /cm/g, '(Â° 0.010m)');
+					s = s.replace( /mm/g, '(Â° 0.001m)');
+					s = s.replace(/min/g,    '(Â° 60s)');
+					s = s.replace(  /m/g,      '(Â° m)');
 					m_is_min = false;
 					break;
 				case 'time':
-					s = s.replace(/min/g, '(° 60s)');
+					s = s.replace(/min/g, '(Â° 60s)');
 					if( m_is_min )
-						s = s.replace(/m/g, '(° 60s)')
+						s = s.replace(/m/g, '(Â° 60s)')
 					;
-					s = s.replace(/h/g, '(° 3600s)');
-					s = s.replace(/s/g, '(° s)');
+					s = s.replace(/h/g, '(Â° 3600s)');
+					s = s.replace(/s/g, '(Â° s)');
 					t_is_ton = false;
 					break;
 				default:
 					throw "mathslang does not support unit `"+u+"'";
 			}
 		});
-		// replace marker `°' into potential cut left-side operand
-		for( var i=0; i < s.length; ++i ) if( s[i] == '°' ) {
+		function assign(s, i, c) {
+			return s.substr( 0, i ) + c + s.substr( i + c.length );
+		}
+		// replace marker `Â°' into potential cut left-side operand
+		for( var i=0; i < s.length; ++i ) if( s[i] == 'Â°' ) {
 			// watch out .. `i' could be 0
 			if( i && s[i-1] != '(' )
-				throw s[i-1] + '° instead of (°'
+				throw s[i-1] + 'Â° instead of (Â°'
 			;
 			var offset=2;
 			do {
@@ -623,9 +627,7 @@ window.Slang._mathslang.lexical = ( function( ) {
 				;
 				while( s[i-offset] == ' ' ) ++ offset;
 			} while( i >= offset && s[i-offset] == ')' );
-			function assign(s, i, c) {
-				return s.substr( 0, i ) + c + s.substr( i + c.length );
-			}
+	
 			if( s[i-offset] == '/' ) {
 				for( var k=0; k+2 < offset; ++k )
 					s = assign( s, i-k, s[i-k-2] );
@@ -634,8 +636,8 @@ window.Slang._mathslang.lexical = ( function( ) {
 				s = assign( s, i-offset+2, '(' );
 			}
 		}
-		// replace unsigned maker `°' into space
-		return s.replace(/\°/g, '');
+		// replace unsigned maker `Â°' into space
+		return s.replace(/\Â°/g, '');
 	}
 // private
 // grammar
@@ -657,14 +659,14 @@ window.Slang._mathslang.lexical = ( function( ) {
 	[
 		new Gram(false, /^\+|\-|\*|\/$/),
 		new Gram(false, /^\^$/),
-		new Gram(false, /^[a-zA-Z]$/),
+		new Gram(false, /^[a-zA-ZÎ±-Ï‰Î“-Î©]$/),
 		new Gram(true, /^[0-9]|\,|\.$/),
 
 	];
 // String -> String
 	function _prep(x) {
-		x = x.replace(/²/g, "^2");
-		x = x.replace(/³/g, "^3");
+		x = x.replace(/Â²/g, "^2");
+		x = x.replace(/Â³/g, "^3");
 		x = x.replace(/\u00B2/g, "^2");
 		x = x.replace(/\u00B3/g, "^3");
 		x = x.replace(/,/g, ".");
@@ -703,13 +705,13 @@ window.Slang._mathslang.lexical = ( function( ) {
 	};
 	function _replaceFun(x) {
 		var fun = {
-		// every key is including a argument maker `°'
-			'Sqrt(°)'	: '°^.5',
-			'sqrt(°)'	: '°^.5',
-			'root(°)'	: '°^.5',
-			'wurzel(°)'	: '°^.5',
-			'Wurzel(°)'	: '°^.5',
-			'R007(°)'	: '°^.5'
+		// every key is including a argument maker `Â°'
+			'Sqrt(Â°)'	: 'Â°^.5',
+			'sqrt(Â°)'	: 'Â°^.5',
+			'root(Â°)'	: 'Â°^.5',
+			'wurzel(Â°)'	: 'Â°^.5',
+			'Wurzel(Â°)'	: 'Â°^.5',
+			'R007(Â°)'	: 'Â°^.5'
 		}
 		function assign(s, i, c) {
 			return s.substr( 0, i ) + c + s.substr( i + c.length );
@@ -721,7 +723,7 @@ window.Slang._mathslang.lexical = ( function( ) {
 				var i=0;
 				while( key_array[key_i][i] == x[offset+i] ) {
 					++ i;
-					if( key_array[key_i][i] == '°' ) {
+					if( key_array[key_i][i] == 'Â°' ) {
 						var argument = '';
 					// save argument
 						var j = 0;
@@ -736,7 +738,7 @@ window.Slang._mathslang.lexical = ( function( ) {
 							x.substr(offset+i+j, x.length)
 						;
 					// insert argument at 1st maker
-						x = x.replace( '°', '(' + argument + ')' );
+						x = x.replace( 'Â°', '(' + argument + ')' );
 					}
 				}
 			}

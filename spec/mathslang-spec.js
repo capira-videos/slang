@@ -223,6 +223,14 @@ describe('mathslang', function() {
         expect(f('Kg/s') == 'weight time').toEqual(true);
         expect(f('h/g') == 'weight time').toEqual(true);
     });
+    it('can handle greek letters', function() {
+        expect(ms.compare('#equals α','α')).toEqual(true);
+        expect(ms.compare('#equals α+tino','inot+α')).toEqual(true);
+        expect(ms.compare('#equals Δ+tino','inot+Δ')).toEqual(true);
+        expect(ms.compare('#equals α^ψ','α^ψ')).toEqual(true);
+        expect(ms.compare('#identic α^ψ','α^ψ')).toEqual(true);
+        expect(ms.compare('#equals 2π','π+π')).toEqual(true);
+    });
 
 
     it('can handle variables', function() {
