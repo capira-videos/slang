@@ -1,5 +1,30 @@
 'use strict';
 var Slang = Slang || {};
+Slang.colorslang = (function() {
+    function compare(expected, given) {
+        return expected.toLowerCase() === rgbToHex(given).toLowerCase();
+    }
+
+    function rgbToHex(c) {
+        return '#' + ((1 << 24) + (c[0] << 16) + (c[1] << 8) + c[2]).toString(16).slice(1);
+    }
+    /*
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+    */
+    return {
+        compare: compare
+    };
+})();
+
+'use strict';
+var Slang = Slang || {};
 Slang.hausdorffslang = (function() {
 
     function compare(X, Y, translateX, translateY, scale) {
@@ -110,31 +135,6 @@ Slang.hausdorffslang = (function() {
         };
     }
 
-    return {
-        compare: compare
-    };
-})();
-
-'use strict';
-var Slang = Slang || {};
-Slang.colorslang = (function() {
-    function compare(expected, given) {
-        return expected.toLowerCase() === rgbToHex(given).toLowerCase();
-    }
-
-    function rgbToHex(c) {
-        return '#' + ((1 << 24) + (c[0] << 16) + (c[1] << 8) + c[2]).toString(16).slice(1);
-    }
-    /*
-        function hexToRgb(hex) {
-            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : null;
-        }
-    */
     return {
         compare: compare
     };
@@ -491,6 +491,7 @@ window.Slang.mathslang = ( function( ) {
 	}
 // private
 	function _log(e)		{ }//{ console.log(e); }
+	function _macro( )		{ return Slang._mathslang.macro; }
 	function _lex( )		{ return Slang._mathslang.lexical; }
 	function _syntax( )		{ return Slang._mathslang.syntax; }
 	function _semantix( )	{ return Slang._mathslang.semantix; }
@@ -506,7 +507,7 @@ window.Slang.mathslang = ( function( ) {
 				return false
 			;
 		// parse complex identifiers
-			{	var temp = _lex( ).replace_id( a, b );
+			{	var temp = _macro( ).replace_id( a, b );
 				a = temp[0];
 				b = temp[1];
 			}
@@ -554,7 +555,7 @@ window.Slang.mathslang = ( function( ) {
 				return false
 			;
 		// parse complex identifiers
-			{	var temp = _lex( ).replace_id( a, b );
+			{	var temp = _macro( ).replace_id( a, b );
 				a = temp[0];
 				b = temp[1];
 			}
@@ -583,7 +584,7 @@ window.Slang.mathslang = ( function( ) {
 				return false
 			;
 		// parse complex identifiers
-			{	var temp = _lex( ).replace_id( a, b );
+			{	var temp = _macro( ).replace_id( a, b );
 				a = temp[0];
 				b = temp[1];
 			}
@@ -993,6 +994,31 @@ window.Slang._mathslang.lexical = ( function( ) {
 			}
 		} return x;
 	}
+	return {
+		FLAG : FLAG,
+		T : Token,
+		iter : iter,
+		empty : empty,
+		replace_units : replace_units
+	};
+})
+( );
+/*	Lex.FYPE =
+	{
+		EXP : 1,
+		LOG : 2,
+		SIN : 3,
+		COS : 4,
+		TAN : 5
+	};
+*/
+'use strict';
+/**
+	class macro parses pre-processor styles
+**/
+window.Slang = window.Slang || { };
+window.Slang._mathslang = window.Slang._mathslang || { };
+window.Slang._mathslang.macro = ( function( ) {
 	// string, char -> char
 	function _free_id( x, c ) {
 		while( x.indexOf( c ) != -1 )
@@ -1000,8 +1026,7 @@ window.Slang._mathslang.lexical = ( function( ) {
 		;
 		return c;
 	}
-	// string -> string[]
-	function _list_complex_id( x ) {
+	function _list_complex_id_underscore( x ) {
 		var list	= [ ];
 		var index	= 0;
 		while( ( index = x.indexOf('_') ) != - 1 ) {
@@ -1009,6 +1034,20 @@ window.Slang._mathslang.lexical = ( function( ) {
 			x = x.substring( index + 2 );
 		}
 		return list;
+	}
+	function _list_complex_id_prime( x ) {
+		var list	= [ ];
+		var index	= 0;
+		while( ( index = x.indexOf('\'') ) != - 1 ) {
+			list.push( x.substring(index - 1, index + 1) );
+			x = x.substring( index + 1 );
+		}
+		return list;
+	}
+	// string -> string[]
+	function _list_complex_id( x ) {
+		return	_list_complex_id_underscore( x ).concat
+		(		_list_complex_id_prime( x )				);
 	}
 	// string ^ 3 -> string
 	function _replace_all( x, key, val ) {
@@ -1031,24 +1070,10 @@ window.Slang._mathslang.lexical = ( function( ) {
 		return[ x, y ];
 	}
 	return {
-		FLAG : FLAG,
-		T : Token,
-		iter : iter,
-		empty : empty,
-		replace_units : replace_units,
 		replace_id : replace_id
 	};
 })
 ( );
-/*	Lex.FYPE =
-	{
-		EXP : 1,
-		LOG : 2,
-		SIN : 3,
-		COS : 4,
-		TAN : 5
-	};
-*/
 'use strict';
 // may rename into `Mantic' or `Mantrix'
 window.Slang = window.Slang || { };
