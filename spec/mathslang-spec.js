@@ -261,4 +261,24 @@ describe('mathslang', function() {
         })).toEqual(true);
         
     });
+	
+	it('can handle variables containing underscore', function() {
+		expect(ms.compare('#equals A+abc+7*x_0', 'abc+7*x_0+A')).toEqual(true);
+	});
+	
+	it('can handle sinus', function() {
+		// mathslang semantix
+		expect(ms.compare('#equals sin(xy)', 'sin(yx)')).toEqual(true);
+		expect(ms.compare('#equals sin(x+y)', 'sin(y+x)')).toEqual(true);
+		// that's why mathslang semantix are not enough
+		expect(ms.compare('#equals sin(x+y)', 'xsin+ysin')).toEqual(false);
+	});
+	
+	it('can handle complex identifiers', function() {
+		expect(ms.compare('#equals x_i', 'x_i')).toEqual(true);
+		expect(ms.compare('#equals HALLOx_ix_i', 'x_i^2HALLO')).toEqual(true);
+		expect(ms.compare('#equals x_ix_i', 'x_i^2')).toEqual(true);
+		expect(ms.compare('#equals x_0^2', 'x_0^2')).toEqual(true);
+		expect(ms.compare('#equals x_0^2', 'x_1^2')).toEqual(false);
+	});
 });

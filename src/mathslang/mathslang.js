@@ -64,7 +64,7 @@ window.Slang.mathslang = ( function( ) {
 		})  )
 			u = 'distance '+u;
 		;
-		console.log(u.trim( ));
+//		console.log(u.trim( ));
 		return u.trim( );
 		/*if( (index=u.indexOf('distance')) != -1 )
 				case 'weight':
@@ -150,6 +150,11 @@ window.Slang.mathslang = ( function( ) {
 			if( _lex( ).empty(a) || _lex( ).empty(b) )
 				return false
 			;
+		// parse complex identifiers
+			{	var temp = _lex( ).replace_id( a, b );
+				a = temp[0];
+				b = temp[1];
+			}
 		// parse into `syntax'
 			a = _syntax( ).present(a);
 			b = _syntax( ).present(b);
@@ -193,6 +198,12 @@ window.Slang.mathslang = ( function( ) {
 			if( _lex( ).empty(a) || _lex( ).empty(b) )
 				return false
 			;
+		// parse complex identifiers
+			{	var temp = _lex( ).replace_id( a, b );
+				a = temp[0];
+				b = temp[1];
+			}
+		// parse into `syntax'
 			a = _syntax( ).present(a);
 			b = _syntax( ).present(b);
 			if( _syntax( ).string(a) == _syntax( ).string(b) ) {
@@ -216,6 +227,12 @@ window.Slang.mathslang = ( function( ) {
 			if(_lex( ).empty(a) || _lex( ).empty(b))
 				return false
 			;
+		// parse complex identifiers
+			{	var temp = _lex( ).replace_id( a, b );
+				a = temp[0];
+				b = temp[1];
+			}
+		// parse into `semantix'
 			a = _semantix( ).present(a);
 			b = _semantix( ).present(b);
 			{	var unit_a = a.clone( );

@@ -23,6 +23,8 @@ window.Slang._mathslang.lexical = ( function( ) {
 	};
 	// String -> Lex.T[]
 	function iter(x) {
+		// x_0 -> Z
+	//	x = _replace_varts(x);
 		// `sqrt(*)' -> (*)^-0.5`
 		x = _replaceFun(x);
 		// ~~~~~>
@@ -52,6 +54,9 @@ window.Slang._mathslang.lexical = ( function( ) {
 							_BRACKET[1].test(chr) ?-1 : 0;
 				}
 				r.push(new Token(flag, code));
+			}
+			else if( r.length && q[0] == '_' )
+			{	q.shift()////////////////////////////
 			}
 			else
 			{
@@ -163,6 +168,35 @@ window.Slang._mathslang.lexical = ( function( ) {
 		// replace unsigned maker `°' into space
 		return s.replace(/\°/g, '');
 	}
+	function _directional_varts(s, index, sign) {
+		var c;
+		do {
+			c = s[ index += sign ];
+			console.log(c + ' ' + _GRAMMAR[FLAG.X].test(c) + ' ' + _GRAMMAR[FLAG.N].test(c) ); 
+		} while
+		(	_GRAMMAR[FLAG.X].test(c) ||
+			_GRAMMAR[FLAG.N].test(c)
+		);
+		return index;
+	}
+	// String -> String
+/*	function _replace_varts(s) {
+		var i;
+		while( ( i = s.indexOf('_') ) != - 1 ) {
+			var start = _directional_varts(s, i, -1)+1;
+			var end   = _directional_varts(s, i, +1);
+			var token = s.substring(start, end);
+			var x = 'A';
+			while( s.indexOf(x) != -1 ) {
+				x = String.fromCharCode( x.charCodeAt(0) + 1 );
+			}
+			while( ( i = s.indexOf(token) ) != -1 ) {
+				s = s.substring(0, i) + x + s.substring(i+token.length);
+			}
+		}
+		console.log(s);
+		return s;
+	}*/
 // private
 // grammar
 	function Gram(plu, exp) {
@@ -268,12 +302,50 @@ window.Slang._mathslang.lexical = ( function( ) {
 			}
 		} return x;
 	}
+	// string, char -> char
+	function _free_id( x, c ) {
+		while( x.indexOf( c ) != -1 )
+			c = String.fromCharCode( c.charCodeAt(0) + 1 );
+		;
+		return c;
+	}
+	// string -> string[]
+	function _list_complex_id( x ) {
+		var list	= [ ];
+		var index	= 0;
+		while( ( index = x.indexOf('_') ) != - 1 ) {
+			list.push( x.substring(index - 1, index + 2) );
+			x = x.substring( index + 2 );
+		}
+		return list;
+	}
+	// string ^ 3 -> string
+	function _replace_all( x, key, val ) {
+		while( x.indexOf(key) != -1 )
+			x = x.replace( key, val )
+		;
+		return x;
+	}
+	// string ^ 2 -> string[2]
+	function replace_id( x, y ) {
+		var complex_id = _list_complex_id(x).concat
+					(	 _list_complex_id(y)	)
+		;
+		while( complex_id.length ) {
+			var k = complex_id.shift( );
+			var v = _free_id( x + y, 'A' );
+			x = _replace_all( x, k, v );
+			y = _replace_all( y, k, v );
+		}
+		return[ x, y ];
+	}
 	return {
 		FLAG : FLAG,
 		T : Token,
 		iter : iter,
 		empty : empty,
-		replace_units : replace_units
+		replace_units : replace_units,
+		replace_id : replace_id
 	};
 })
 ( );
