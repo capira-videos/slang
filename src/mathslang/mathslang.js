@@ -136,6 +136,7 @@ window.Slang.mathslang = ( function( ) {
 	}
 // private
 	function _log(e)		{ }//{ console.log(e); }
+	function _macro( )		{ return Slang._mathslang.macro; }
 	function _lex( )		{ return Slang._mathslang.lexical; }
 	function _syntax( )		{ return Slang._mathslang.syntax; }
 	function _semantix( )	{ return Slang._mathslang.semantix; }
@@ -151,7 +152,7 @@ window.Slang.mathslang = ( function( ) {
 				return false
 			;
 		// parse complex identifiers
-			{	var temp = _lex( ).replace_id( a, b );
+			{	var temp = _macro( ).replace_id( a, b );
 				a = temp[0];
 				b = temp[1];
 			}
@@ -199,7 +200,7 @@ window.Slang.mathslang = ( function( ) {
 				return false
 			;
 		// parse complex identifiers
-			{	var temp = _lex( ).replace_id( a, b );
+			{	var temp = _macro( ).replace_id( a, b );
 				a = temp[0];
 				b = temp[1];
 			}
@@ -228,7 +229,7 @@ window.Slang.mathslang = ( function( ) {
 				return false
 			;
 		// parse complex identifiers
-			{	var temp = _lex( ).replace_id( a, b );
+			{	var temp = _macro( ).replace_id( a, b );
 				a = temp[0];
 				b = temp[1];
 			}

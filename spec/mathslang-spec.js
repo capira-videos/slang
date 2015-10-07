@@ -272,6 +272,8 @@ describe('mathslang', function() {
 
     it('can handle fancy indentifiers', function() {
         expect(ms.compare('#equals t\'', 't\'')).toEqual(true);
+		expect(ms.compare('#equals k\'^2', 'k\'k\'')).toEqual(true);
+		expect(ms.compare('#equals t\'^2', 'k\'k\'')).toEqual(false);
     });
 	
 	it('can handle variables containing underscore', function() {

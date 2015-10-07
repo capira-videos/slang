@@ -302,50 +302,12 @@ window.Slang._mathslang.lexical = ( function( ) {
 			}
 		} return x;
 	}
-	// string, char -> char
-	function _free_id( x, c ) {
-		while( x.indexOf( c ) != -1 )
-			c = String.fromCharCode( c.charCodeAt(0) + 1 );
-		;
-		return c;
-	}
-	// string -> string[]
-	function _list_complex_id( x ) {
-		var list	= [ ];
-		var index	= 0;
-		while( ( index = x.indexOf('_') ) != - 1 ) {
-			list.push( x.substring(index - 1, index + 2) );
-			x = x.substring( index + 2 );
-		}
-		return list;
-	}
-	// string ^ 3 -> string
-	function _replace_all( x, key, val ) {
-		while( x.indexOf(key) != -1 )
-			x = x.replace( key, val )
-		;
-		return x;
-	}
-	// string ^ 2 -> string[2]
-	function replace_id( x, y ) {
-		var complex_id = _list_complex_id(x).concat
-					(	 _list_complex_id(y)	)
-		;
-		while( complex_id.length ) {
-			var k = complex_id.shift( );
-			var v = _free_id( x + y, 'A' );
-			x = _replace_all( x, k, v );
-			y = _replace_all( y, k, v );
-		}
-		return[ x, y ];
-	}
 	return {
 		FLAG : FLAG,
 		T : Token,
 		iter : iter,
 		empty : empty,
-		replace_units : replace_units,
-		replace_id : replace_id
+		replace_units : replace_units
 	};
 })
 ( );
