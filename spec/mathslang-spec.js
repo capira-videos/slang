@@ -232,12 +232,12 @@ describe('mathslang', function() {
         expect(f('h/g') == 'weight time').toEqual(true);
     });
     it('can handle greek letters', function() {
-        expect(ms.compare('#equals α','α')).toEqual(true);
-        expect(ms.compare('#equals α+tino','inot+α')).toEqual(true);
-        expect(ms.compare('#equals Δ+tino','inot+Δ')).toEqual(true);
-        expect(ms.compare('#equals α^ψ','α^ψ')).toEqual(true);
-        expect(ms.compare('#identic α^ψ','α^ψ')).toEqual(true);
-        expect(ms.compare('#equals 2π','π+π')).toEqual(true);
+        expect(ms.compare('#equals α', 'α')).toEqual(true);
+        expect(ms.compare('#equals α+tino', 'inot+α')).toEqual(true);
+        expect(ms.compare('#equals Δ+tino', 'inot+Δ')).toEqual(true);
+        expect(ms.compare('#equals α^ψ', 'α^ψ')).toEqual(true);
+        expect(ms.compare('#identic α^ψ', 'α^ψ')).toEqual(true);
+        expect(ms.compare('#equals 2π', 'π+π')).toEqual(true);
     });
 
 
@@ -256,7 +256,7 @@ describe('mathslang', function() {
         expect(ms.compare('<& [@1443385985478, @1443385986479] & #vecEquals [1,2]>', {
             1443385985478: '20',
             1443385986479: '40'
-        })).toEqual(true); 
+        })).toEqual(true);
         expect(ms.compare('#vecEquals [1,2]', '[1,2]')).toEqual(true);
         expect(ms.compare('#vecEquals [3,2]', '[6,4]')).toEqual(true);
         expect(ms.compare('#vecEquals [3.2,2.2]', '[3.2,2.2]')).toEqual(true);
@@ -267,7 +267,11 @@ describe('mathslang', function() {
             x1: 1,
             x2: 2
         })).toEqual(true);
-        
+
+    });
+
+    it('can handle fancy indentifiers', function() {
+        expect(ms.compare('#equals t\'', 't\'')).toEqual(true);
     });
 	
 	it('can handle variables containing underscore', function() {
