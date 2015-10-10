@@ -4,18 +4,30 @@
 window.Slang = window.Slang || { };
 window.Slang._mathslang = window.Slang._mathslang || { };
 window.Slang._mathslang.macro = ( function( ) {
-	// string, char -> char
-	function _free_id( x, c ) {
-		while( x.indexOf( c ) != -1 )
-			c = String.fromCharCode( c.charCodeAt(0) + 1 );
-		;
+	var _free_id_pattern = "azAZαωΓΩ";
+	// string -> char
+	function _free_id( x ) {
+		var c = _free_id_pattern[ 0 ];
+		var k = _free_id_pattern.substring( 1 );
+		while( x.indexOf( c ) != -1 ) {
+			var cc = c.charCodeAt(0);
+			if( k.length && k.charCodeAt(0) == cc ) {
+				k = k.substring( 1 );
+				if( ! k.length )
+					return ''
+				;
+				c = k[ 0 ];
+				k = k.substring( 1 );
+			} else {
+				c = String.fromCharCode( cc + 1 );
+			}
+		}
 		return c;
 	}
 	function _list_complex_id_underscore( x ) {
 		var list	= [ ];
 		var index	= 0;
 		while( ( index = x.indexOf('_') ) != - 1 ) {
-		//	list.push( x[index-1] + x[index+1] );
 			list.push( x.substring(index - 1, index + 2) );
 			x = x.substring( index + 2 );
 		}
@@ -44,7 +56,7 @@ window.Slang._mathslang.macro = ( function( ) {
 		;
 		while( complex_id.length ) {
 			var k = complex_id.shift( );
-			var v = _free_id( x + y, 'A' );
+			var v = _free_id( x + y );
 			x = _replace_all( x, k, v );
 			y = _replace_all( y, k, v );
 			k = k[0] + k[2];
@@ -56,7 +68,7 @@ window.Slang._mathslang.macro = ( function( ) {
 		;
 		while( complex_id.length ) {
 			var k = complex_id.shift( );
-			var v = _free_id( x + y, 'A' );
+			var v = _free_id( x + y );
 			x = _replace_all( x, k, v );
 			y = _replace_all( y, k, v );
 		}

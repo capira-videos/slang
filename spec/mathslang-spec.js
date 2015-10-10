@@ -158,6 +158,11 @@ describe('mathslang', function() {
 		expect(ms.compare('#equals x_0-y_0', '-y0+x0')).toEqual(true);
 		expect(ms.compare('#equals x_0+y_0', '0')).toEqual(false);
 		expect(ms.compare('#equals x_0', '0x')).toEqual(false);
+		// `π'(pi) is the only char left for replacing `x_0' and `x0' to
+		expect(ms.compare
+		(	'#equals ΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡ΢ΣΤΥΦΧΨΩabcdefghijklmnopqrstuvwxyz0+x_0',
+			'ABCDEFGHIJKLMNOPQRSTUVWXYZαβγδεζηθικλμνξορςστυφχψω0+x0'
+		)).toEqual(true);
     });
     it('can handle indexed variables using #equals (prof-style)', function() {
 		expect(true).toEqual(true);
