@@ -153,11 +153,11 @@ describe('mathslang', function() {
         //  expect(ms.compare('#approx 1 Km/(s^2) #epsilon 0.1', '999m/(s^2) ', 'distance time')).toEqual(true);
     });
     it('can handle indexed variables using #equals (stud-style)', function() {
-		expect(ms.compare('#equals x0+y0', 'y0+x0')).toEqual(true);
-		expect(ms.compare('#equals x0y0', 'x0*y0')).toEqual(true);
-		expect(ms.compare('#equals x0-y0', '-y0+x0')).toEqual(true);
-		expect(ms.compare('#equals x0+y0', '0')).toEqual(false);
-		expect(ms.compare('#equals x0', '0x')).toEqual(false);
+		expect(ms.compare('#equals x_0+y_0', 'y0+x0')).toEqual(true);
+		expect(ms.compare('#equals x_0y_0', 'x0*y0')).toEqual(true);
+		expect(ms.compare('#equals x_0-y_0', '-y0+x0')).toEqual(true);
+		expect(ms.compare('#equals x_0+y_0', '0')).toEqual(false);
+		expect(ms.compare('#equals x_0', '0x')).toEqual(false);
     });
     it('can handle indexed variables using #equals (prof-style)', function() {
 		expect(true).toEqual(true);
