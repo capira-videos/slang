@@ -30,11 +30,6 @@ window.Slang._mathslang.macro = ( function( ) {
 		}
 		return list;
 	}
-	// string -> string[]
-	function _list_complex_id( x ) {
-		return	_list_complex_id_underscore( x ).concat
-		(		_list_complex_id_prime( x )				);
-	}
 	// string ^ 3 -> string
 	function _replace_all( x, key, val ) {
 		while( x.indexOf(key) != -1 )
