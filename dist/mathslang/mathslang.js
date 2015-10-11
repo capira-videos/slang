@@ -657,18 +657,30 @@ window.Slang._mathslang.lexical = ( function( ) {
 		TAN : 5
 	};
 */
-'use strict';
 /**
 	class macro parses pre-processor styles
 **/
 window.Slang = window.Slang || { };
 window.Slang._mathslang = window.Slang._mathslang || { };
 window.Slang._mathslang.macro = ( function( ) {
-	// string, char -> char
-	function _free_id( x, c ) {
-		while( x.indexOf( c ) != -1 )
-			c = String.fromCharCode( c.charCodeAt(0) + 1 );
-		;
+	var _free_id_pattern = "azAZαωΓΩ";
+	// string -> char
+	function _free_id( x ) {
+		var c = _free_id_pattern[ 0 ];
+		var k = _free_id_pattern.substring( 1 );
+		while( x.indexOf( c ) != -1 ) {
+			var cc = c.charCodeAt(0);
+			if( k.length && k.charCodeAt(0) == cc ) {
+				k = k.substring( 1 );
+				if( ! k.length )
+					return ''
+				;
+				c = k[ 0 ];
+				k = k.substring( 1 );
+			} else {
+				c = String.fromCharCode( cc + 1 );
+			}
+		}
 		return c;
 	}
 	function _list_complex_id_underscore( x ) {
@@ -689,11 +701,6 @@ window.Slang._mathslang.macro = ( function( ) {
 		}
 		return list;
 	}
-	// string -> string[]
-	function _list_complex_id( x ) {
-		return	_list_complex_id_underscore( x ).concat
-		(		_list_complex_id_prime( x )				);
-	}
 	// string ^ 3 -> string
 	function _replace_all( x, key, val ) {
 		while( x.indexOf(key) != -1 )
@@ -703,12 +710,24 @@ window.Slang._mathslang.macro = ( function( ) {
 	}
 	// string ^ 2 -> string[2]
 	function replace_id( x, y ) {
-		var complex_id = _list_complex_id(x).concat
-					(	 _list_complex_id(y)	)
+		var complex_id = _list_complex_id_underscore(x).concat
+					(	 _list_complex_id_underscore(y)	)
 		;
 		while( complex_id.length ) {
 			var k = complex_id.shift( );
-			var v = _free_id( x + y, 'A' );
+			var v = _free_id( x + y );
+			x = _replace_all( x, k, v );
+			y = _replace_all( y, k, v );
+			k = k[0] + k[2];
+			x = _replace_all( x, k, v );
+			y = _replace_all( y, k, v );
+		}
+		complex_id = _list_complex_id_prime(x).concat
+				(	 _list_complex_id_prime(y)	)
+		;
+		while( complex_id.length ) {
+			var k = complex_id.shift( );
+			var v = _free_id( x + y );
 			x = _replace_all( x, k, v );
 			y = _replace_all( y, k, v );
 		}
