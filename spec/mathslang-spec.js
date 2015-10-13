@@ -16,6 +16,7 @@ describe('mathslang', function() {
         expect(ms.compare('#equals x^(-a)', '1/(x^a)')).toEqual(true);
         expect(ms.compare('#equals e^(x+y)', '(e^x)*(e^y)')).toEqual(true);
         expect(ms.compare('#equals e^(x+y)', 'e^x')).toEqual(false);
+        expect(ms.compare('#equals 1/x^2', '1/(x^2)')).toEqual(true);
     });
 
     it('has not known bugs using #equals', function() {
@@ -153,24 +154,23 @@ describe('mathslang', function() {
         //  expect(ms.compare('#approx 1 Km/(s^2) #epsilon 0.1', '999m/(s^2) ', 'distance time')).toEqual(true);
     });
     it('can handle indexed variables using #equals (stud-style)', function() {
-		expect(ms.compare('#equals x_0+y_0', 'y0+x0')).toEqual(true);
-		expect(ms.compare('#equals x_0y_0', 'x0*y0')).toEqual(true);
-		expect(ms.compare('#equals x_0-y_0', '-y0+x0')).toEqual(true);
-		expect(ms.compare('#equals x_0+y_0', '0')).toEqual(false);
-		expect(ms.compare('#equals x_0', '0x')).toEqual(false);
-		// `π'(pi) is the only char left for replacing `x_0' and `x0' to
-		expect(ms.compare
-		(	'#equals ΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡ΢ΣΤΥΦΧΨΩabcdefghijklmnopqrstuvwxyz0+x_0',
-			'ABCDEFGHIJKLMNOPQRSTUVWXYZαβγδεζηθικλμνξορςστυφχψω0+x0'
-		)).toEqual(true);
+        expect(ms.compare('#equals x_0+y_0', 'y0+x0')).toEqual(true);
+        expect(ms.compare('#equals x_0y_0', 'x0*y0')).toEqual(true);
+        expect(ms.compare('#equals x_0-y_0', '-y0+x0')).toEqual(true);
+        expect(ms.compare('#equals x_0+y_0', '0')).toEqual(false);
+        expect(ms.compare('#equals x_0', '0x')).toEqual(false);
+        // `π'(pi) is the only char left for replacing `x_0' and `x0' to
+        expect(ms.compare('#equals ΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡ΢ΣΤΥΦΧΨΩabcdefghijklmnopqrstuvwxyz0+x_0',
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZαβγδεζηθικλμνξορςστυφχψω0+x0'
+        )).toEqual(true);
     });
     it('can handle indexed variables using #equals (prof-style)', function() {
-		expect(true).toEqual(true);
-		expect(ms.compare('#equals x_0+y_0', 'y_0+x_0')).toEqual(true);
-		expect(ms.compare('#equals x_0y_0', 'x_0*y_0')).toEqual(true);
-		expect(ms.compare('#equals x_0-y_0', '-y_0+x_0')).toEqual(true);
-		expect(ms.compare('#equals x_0+y_0', '0')).toEqual(false);
-		expect(ms.compare('#equals x_0', '0_x')).toEqual(false);
+        expect(true).toEqual(true);
+        expect(ms.compare('#equals x_0+y_0', 'y_0+x_0')).toEqual(true);
+        expect(ms.compare('#equals x_0y_0', 'x_0*y_0')).toEqual(true);
+        expect(ms.compare('#equals x_0-y_0', '-y_0+x_0')).toEqual(true);
+        expect(ms.compare('#equals x_0+y_0', '0')).toEqual(false);
+        expect(ms.compare('#equals x_0', '0_x')).toEqual(false);
     });
     it('can handle special chars using #equals', function() {
         expect(ms.compare('#equals a^3', 'aa²')).toEqual(true);
@@ -277,27 +277,27 @@ describe('mathslang', function() {
 
     it('can handle fancy indentifiers', function() {
         expect(ms.compare('#equals t\'', 't\'')).toEqual(true);
-		expect(ms.compare('#equals k\'^2', 'k\'k\'')).toEqual(true);
-		expect(ms.compare('#equals t\'^2', 'k\'k\'')).toEqual(false);
+        expect(ms.compare('#equals k\'^2', 'k\'k\'')).toEqual(true);
+        expect(ms.compare('#equals t\'^2', 'k\'k\'')).toEqual(false);
     });
-	
-	it('can handle variables containing underscore', function() {
-		expect(ms.compare('#equals A+abc+7*x_0', 'abc+7*x_0+A')).toEqual(true);
-	});
-	
-	it('can handle sinus', function() {
-		// mathslang semantix
-		expect(ms.compare('#equals sin(xy)', 'sin(yx)')).toEqual(true);
-		expect(ms.compare('#equals sin(x+y)', 'sin(y+x)')).toEqual(true);
-		// that's why mathslang semantix are not enough
-		expect(ms.compare('#equals sin(x+y)', 'xsin+ysin')).toEqual(false);
-	});
-	
-	it('can handle complex identifiers', function() {
-		expect(ms.compare('#equals x_i', 'x_i')).toEqual(true);
-		expect(ms.compare('#equals HALLOx_ix_i', 'x_i^2HALLO')).toEqual(true);
-		expect(ms.compare('#equals x_ix_i', 'x_i^2')).toEqual(true);
-		expect(ms.compare('#equals x_0^2', 'x_0^2')).toEqual(true);
-		expect(ms.compare('#equals x_0^2', 'x_1^2')).toEqual(false);
-	});
+
+    it('can handle variables containing underscore', function() {
+        expect(ms.compare('#equals A+abc+7*x_0', 'abc+7*x_0+A')).toEqual(true);
+    });
+
+    it('can handle sinus', function() {
+        // mathslang semantix
+        expect(ms.compare('#equals sin(xy)', 'sin(yx)')).toEqual(true);
+        expect(ms.compare('#equals sin(x+y)', 'sin(y+x)')).toEqual(true);
+        // that's why mathslang semantix are not enough
+        expect(ms.compare('#equals sin(x+y)', 'xsin+ysin')).toEqual(false);
+    });
+
+    it('can handle complex identifiers', function() {
+        expect(ms.compare('#equals x_i', 'x_i')).toEqual(true);
+        expect(ms.compare('#equals HALLOx_ix_i', 'x_i^2HALLO')).toEqual(true);
+        expect(ms.compare('#equals x_ix_i', 'x_i^2')).toEqual(true);
+        expect(ms.compare('#equals x_0^2', 'x_0^2')).toEqual(true);
+        expect(ms.compare('#equals x_0^2', 'x_1^2')).toEqual(false);
+    });
 });
