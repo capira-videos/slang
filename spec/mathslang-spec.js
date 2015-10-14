@@ -300,4 +300,18 @@ describe('mathslang', function() {
         expect(ms.compare('#equals x_0^2', 'x_0^2')).toEqual(true);
         expect(ms.compare('#equals x_0^2', 'x_1^2')).toEqual(false);
     });
+
+    it('can handle units using #lt, #leq, #gt, #geq ', function() {
+        //schnell skizziert... maybe the tests are a little buggy.... 
+        expect(ms.compare('#lt 10km', '15km', 'distance')).toEqual(true);
+        expect(ms.compare('#lt 10km', '5km', 'distance')).toEqual(false);
+        expect(ms.compare('#gt 10km', '5m', 'distance')).toEqual(true);
+        expect(ms.compare('#gt 10m', '15km', 'distance')).toEqual(false);
+
+        expect(ms.compare('#lt 10s', '15h', 'time')).toEqual(true);
+        expect(ms.compare('#lt 10s', '5h', 'time')).toEqual(false);
+        expect(ms.compare('#gt 10s', '5h', 'time')).toEqual(true);
+        expect(ms.compare('#gt 10s', '15h', 'time')).toEqual(false);
+
+    });
 });
