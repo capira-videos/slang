@@ -303,6 +303,9 @@ describe('mathslang', function() {
 
     it('can handle units using #lt, #leq, #gt, #geq ', function() {
         //schnell skizziert... maybe the tests are a little buggy.... 
+        expect(ms.compare('#lt 10km', '15', 'distance')).toEqual(false);
+        expect(ms.compare('#lt 10', '15a')).toEqual(false);
+
         expect(ms.compare('#lt 10km', '15km', 'distance')).toEqual(true);
         expect(ms.compare('#lt 10km', '5km', 'distance')).toEqual(false);
         expect(ms.compare('#gt 10km', '5m', 'distance')).toEqual(true);
