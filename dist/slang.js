@@ -1086,7 +1086,46 @@ window.Slang._mathslang.macro = ( function( ) {
 			x = _replace_all( x, k, v );
 			y = _replace_all( y, k, v );
 		}
+		// (provisorisch)
+		// begin `strong-binding-power-in-denominator'
+		x = _replace_strong_binding_power_in_denominator( x );
+		y = _replace_strong_binding_power_in_denominator( y );
+		// end   `strong-binding-power-in-denominator'
 		return[ x, y ];
+	}
+	function _replace_strong_binding_power_in_denominator( x ) {
+		var offset = 0;
+		var substr = x;
+		for( var i=substr.indexOf('/')+1; i&&offset<x.length; i=substr.indexOf('/')+1 ) {
+		//	var bracket	= false;
+			var substr = x.substr( i );
+			offset += i;
+			var j = 0;
+			var c = substr[j];
+			while(	/^\s$/.test(c)			||
+					/^[0-9]|\,|\.$/.test(c)	||
+					/^[a-zA-Zα-ωΓ-Ω]$/.test(c)	)
+			{
+				c = substr[++j];
+			}
+			if( c != '^' ) {
+				substr = substr.substr(j);
+				offset += j;
+				continue;
+			}
+			c = substr[++j];
+			while(	/^\s$/.test(c)			||
+					/^[0-9]|\,|\.$/.test(c)	||
+					/^[a-zA-Zα-ωΓ-Ω]$/.test(c)	)
+			{
+				c = substr[++j];
+			}
+			x = x.substr(0,offset)+'('+x.substr(offset,offset+j)+')'+x.substr(offset+j);
+			j += 2;
+			offset += j;
+			substr = substr.substr(2+j);
+		}
+		return x;
 	}
 	return {
 		replace_id : replace_id
