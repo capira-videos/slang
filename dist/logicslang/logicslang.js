@@ -5,15 +5,16 @@ window.Slang.logicslang = {
     compare: function(expectedValue, givenValue, compareFn, _units) {
         // Replace any @variableName with the variable in givenValue
         if (typeof givenValue == 'object') {
+            var parsedGivenValue = expectedValue.inputExp;
             for (var key in givenValue) {
                 var regexp = new RegExp('@' + key, 'g');
                 if (expectedValue.exp) {
-                    expectedValue.inputExp = expectedValue.inputExp.replace(regexp, givenValue[key]);
+                    parsedGivenValue = parsedGivenValue.replace(regexp, givenValue[key]);
                 } else {
                     expectedValue = expectedValue.replace(regexp, givenValue[key]);
                 }
             }
-            return compareFn(expectedValue, expectedValue.inputExp, _units);
+            return compareFn(expectedValue, parsedGivenValue, _units);
         }
         //var lp = new LogicParser(compareFn);
         return compareFn(expectedValue, givenValue, _units);
