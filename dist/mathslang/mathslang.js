@@ -440,8 +440,9 @@ window.Slang._mathslang.lexical = ( function( ) {
 					else
 						flag++;
 				}
-				if(code.length == 0)
+				if(code.length == 0){
 					throw q.shift();
+				}
 			}
 		}
 		return _oper(r);
@@ -793,7 +794,7 @@ window.Slang._mathslang.macro = ( function( ) {
 			{
 				c = substr[++j];
 			}
-			x = x.substr(0,offset)+'('+x.substr(offset,offset+j)+')'+x.substr(offset+j);
+			x = x.substr(0,offset)+'('+x.substr(offset,j)+')'+x.substr(offset+j);
 			j += 2;
 			offset += j;
 			substr = substr.substr(2+j);

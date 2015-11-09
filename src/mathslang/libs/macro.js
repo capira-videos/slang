@@ -106,7 +106,7 @@ window.Slang._mathslang.macro = ( function( ) {
 			{
 				c = substr[++j];
 			}
-			x = x.substr(0,offset)+'('+x.substr(offset,offset+j)+')'+x.substr(offset+j);
+			x = x.substr(0,offset)+'('+x.substr(offset,j)+')'+x.substr(offset+j);
 			j += 2;
 			offset += j;
 			substr = substr.substr(2+j);

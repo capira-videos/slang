@@ -75,8 +75,9 @@ window.Slang._mathslang.lexical = ( function( ) {
 					else
 						flag++;
 				}
-				if(code.length == 0)
+				if(code.length == 0){
 					throw q.shift();
+				}
 			}
 		}
 		return _oper(r);

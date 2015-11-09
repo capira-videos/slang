@@ -112,7 +112,8 @@ describe('mathslang', function() {
     });
     it('can handle syntactic sugar, binding exponent to denominator', function() {
         var f = Slang.mathslang.extractUnit;
-        expect(f('m^.5/s^2', 'distance') == 'm/s^2').toEqual(true);
+        //expect(f('m^.5/s^2', 'distance') == 'm/s^2').toEqual(true);
+        expect(f('m^.5/s^2', 'distance') == 'distance time').toEqual(true);
         expect(ms.compare({ fun: '#equals', exp: '(c^2/y^2 - 1)^(1/2)'}, '(c^2/y^2 - 1)^(1/2)')).toEqual(true);
     });
     it('can multiply denominators Z & W as (1/Z)*(1/W) using #equals', function() {
