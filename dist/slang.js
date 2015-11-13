@@ -369,9 +369,9 @@ window.Slang.mathslang = (function() {
         function _compare(expectedValue, givenValue, _units) {
             //Inputs could be a Number so we convert them to String:
             givenValue = givenValue + '';
-            var expectedExp = expectedValue.exp + '';
+            var expectedExp = ( expectedValue.exp + '' ).replace(/\s/g, '');
             var that = this;
-            givenValue = givenValue.trim();
+            givenValue = givenValue.trim( ).replace(/\s/g, '');
             var units = expectedValue.units ? expectedValue.units.join(' ') : undefined;
             //expectedValue = expectedValue.trim();
             if (expectedValue.fun) {
@@ -1188,7 +1188,7 @@ window.Slang._mathslang.semantix = ( function() {
 	};
 	Q.prototype.string = function( ) {
 		return this.sums.reduce(function(a, s){
-			return a + '(' + s.string() + ')';
+			return a + '(' + s.string( ) + ')';
 		}, ''+this.fact+_imag( ).string(this.imag));
 	};
 	Q.prototype.pow = function(v) { return new Q

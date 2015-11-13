@@ -19,7 +19,7 @@ window.Slang._mathslang.semantix = ( function() {
 	};
 	Q.prototype.string = function( ) {
 		return this.sums.reduce(function(a, s){
-			return a + '(' + s.string() + ')';
+			return a + '(' + s.string( ) + ')';
 		}, ''+this.fact+_imag( ).string(this.imag));
 	};
 	Q.prototype.pow = function(v) { return new Q
