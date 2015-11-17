@@ -103,6 +103,7 @@ describe('mathslang', function() {
         expect(ms.compare({ fun: '#equals', exp: '1/7331m', units:['distance']}, '1/(7331*m)')).toEqual(true);
         expect(ms.compare({ fun: '#equals', exp: '1/xm', units:['distance']}, '1/(x*m)')).toEqual(true);
         expect(ms.compare({ fun: '#equals', exp: '1/(a+b)m', units:['distance']}, '1/(am+bm)')).toEqual(true);
+        expect(ms.compare({ fun: '#equals', exp: 'a*b^(-1/2)'}, ' a/b^(1/2)')).toEqual(true);
     });
     it('can handle syntactic sugar `x^-1` using #equals', function() {
         // without sugar
