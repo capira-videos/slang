@@ -88,8 +88,7 @@ window.Slang._mathslang.macro = ( function( ) {
 			offset += i;
 			var j = 0;
 			var c = substr[j];
-			while(	/^\s$/.test(c)			||
-					/^[0-9]|\,|\.$/.test(c)	||
+			while(	/^[0-9]|\,|\.$/.test(c)	||
 					/^[a-zA-Zα-ωΓ-Ω]$/.test(c)	)
 			{
 				c = substr[++j];
@@ -100,9 +99,16 @@ window.Slang._mathslang.macro = ( function( ) {
 				continue;
 			}
 			c = substr[++j];
-			while(	/^\s$/.test(c)			||
-					/^[0-9]|\,|\.$/.test(c)	||
-					/^[a-zA-Zα-ωΓ-Ω]$/.test(c)	)
+			if( c == '(' ){
+				var level = 1;
+				while( level > 0 && j < substr.length ){
+					c = substr[++j];
+					level +=	/^\($/.test(c) ? 1
+							:	/^\)$/.test(c) ?-1
+							:					 0
+				}
+			}else while(/^[0-9]|\,|\.$/.test(c)	||
+						/^[a-zA-Zα-ωΓ-Ω]$/.test(c)	)
 			{
 				c = substr[++j];
 			}
