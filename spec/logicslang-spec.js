@@ -9,7 +9,7 @@ describe('logicslang', function() {
     it('can compare Strings containing #or', function() {
         expect(ls.compare('y #or x', 'x', _compareFn)).toEqual(true);
         expect(ls.compare('y #or x', 'z', _compareFn)).toEqual(false);
-        expect(ls.compare('y #or x #or z', 'z', _compareFn)).toEqual(false);
+        expect(ls.compare('y #or x #or z', 'z', _compareFn)).toEqual(true);
     });
     it('can compare Strings containing #and', function() {
         expect(ls.compare('x #and x', 'x', _compareFn)).toEqual(true);
